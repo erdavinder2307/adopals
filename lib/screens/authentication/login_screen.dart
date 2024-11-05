@@ -1,8 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController emailController = TextEditingController();
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,11 +49,15 @@ class LoginScreen extends StatelessWidget {
 
                     // Email/Phone TextField
                     TextField(
+                      controller: emailController,
+                      onChanged: (value) {
+                        setState(() {});
+                      },
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(30.0),
                         ),
-                        labelText: 'Email/Phone No.',
+                        labelText: 'Email or Phone No.',
                         contentPadding: const EdgeInsets.symmetric(
                             horizontal: 20, vertical: 15),
                       ),
@@ -49,19 +66,31 @@ class LoginScreen extends StatelessWidget {
                     const SizedBox(height: 15),
 
                     // Password TextField
-                    TextField(
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30.0),
-                        ),
-                        labelText: 'Password',
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 15),
-                      ),
+                    Builder(
+                      builder: (context) {
+                        final emailValue =
+                            emailController.text.trim().toLowerCase();
+                        if (emailValue.isNotEmpty && emailValue.contains('@')) {
+                          return Column(
+                            children: [
+                              TextField(
+                                obscureText: true,
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(30.0),
+                                  ),
+                                  labelText: 'Password',
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 15),
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                            ],
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
                     ),
-
-                    const SizedBox(height: 10),
 
                     // Remember me checkbox
                     Row(
@@ -159,7 +188,7 @@ class LoginScreen extends StatelessWidget {
             child: Container(
               margin: const EdgeInsets.only(top: 0),
               child: const Image(
-                image: AssetImage('assets/images/login-gradient1.png'),
+                image: AssetImage('assets/images/login-gradient.png'),
                 width: double.infinity,
                 fit: BoxFit.cover,
               ),
