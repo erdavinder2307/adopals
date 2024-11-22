@@ -1,5 +1,5 @@
-import 'package:adopals/screens/home_screen.dart';
 import 'package:flutter/material.dart';
+import 'screens/authentication/splash_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -8,16 +8,14 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Adopals',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+        primarySwatch: Colors.blue,
       ),
-      home: const HomeScreen(),
+      home: SplashScreen(), // Set SplashScreen as the initial screen
     );
   }
 }

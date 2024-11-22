@@ -1,20 +1,24 @@
-import 'package:adopals/screens/authentication/signup_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class SignUpScreen extends StatefulWidget {
+  const SignUpScreen({super.key});
 
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  _SignUpScreenState createState() => _SignUpScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
 
   @override
   void dispose() {
     emailController.dispose();
+    passwordController.dispose();
+    confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -32,14 +36,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     // Logo
-                    Image.asset('assets/images/Adopals-v9.png',
-                        height: 70), // Ensure your logo is in the assets folder
+                    Image.asset('assets/images/Adopals-v9.png', height: 70),
 
                     const SizedBox(height: 10),
 
                     // Title
                     const Text(
-                      "Let's dive Into your Account",
+                      "Create your Account",
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -51,9 +54,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     // Email/Phone TextField
                     TextField(
                       controller: emailController,
-                      onChanged: (value) {
-                        setState(() {});
-                      },
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(30.0),
@@ -67,43 +67,38 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 15),
 
                     // Password TextField
-                    Builder(
-                      builder: (context) {
-                        final emailValue =
-                            emailController.text.trim().toLowerCase();
-                        if (emailValue.isNotEmpty && emailValue.contains('@')) {
-                          return Column(
-                            children: [
-                              TextField(
-                                obscureText: true,
-                                decoration: InputDecoration(
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(30.0),
-                                  ),
-                                  labelText: 'Password',
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 20, vertical: 15),
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                            ],
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      },
+                    TextField(
+                      controller: passwordController,
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30.0),
+                        ),
+                        labelText: 'Password',
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 15),
+                      ),
                     ),
 
-                    // Remember me checkbox
-                    Row(
-                      children: [
-                        Checkbox(value: false, onChanged: (value) {}),
-                        const Text("Remember me"),
-                      ],
+                    const SizedBox(height: 15),
+
+                    // Confirm Password TextField
+                    TextField(
+                      controller: confirmPasswordController,
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30.0),
+                        ),
+                        labelText: 'Confirm Password',
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 15),
+                      ),
                     ),
 
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 15),
 
-                    // Sign In Button
+                    // Sign Up Button
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         shape: RoundedRectangleBorder(
@@ -114,9 +109,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         backgroundColor: Colors.purple,
                       ),
                       onPressed: () {
-                        // Handle sign in
+                        // Handle sign up
                       },
-                      child: const Text("SIGN IN",
+                      child: const Text("SIGN UP",
                           style: TextStyle(color: Colors.white)),
                     ),
 
@@ -127,7 +122,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(height: 10),
 
-                    // Google Sign In Button
+                    // Google Sign Up Button
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         shape: RoundedRectangleBorder(
@@ -142,13 +137,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       label: const Text("Continue with Google",
                           style: TextStyle(color: Colors.black)),
                       onPressed: () {
-                        // Handle Google sign in
+                        // Handle Google sign up
                       },
                     ),
 
                     const SizedBox(height: 10),
 
-                    // Facebook Sign In Button
+                    // Facebook Sign Up Button
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         shape: RoundedRectangleBorder(
@@ -163,39 +158,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       label: const Text("Continue with Facebook",
                           style: TextStyle(color: Colors.black)),
                       onPressed: () {
-                        // Handle Facebook sign in
+                        // Handle Facebook sign up
                       },
                     ),
 
                     const SizedBox(height: 20),
 
-                    // Don't have an account prompt
-                    const Text("Don't have an account?",
+                    // Already have an account prompt
+                    const Text("Already have an account?",
                         style: TextStyle(color: Colors.grey)),
-
-                    // Sign Up Button
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const SignUpScreen()),
-                        );
-                      },
-                      child: const Text(
-                        "Sign Up",
-                        style: TextStyle(
-                          color: Colors.purple,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-
-                    // const Image(
-                    //   image: AssetImage('assets/images/login-gradient.png'),
-                    //   width: double.infinity,
-                    //   fit: BoxFit.cover,
-                    // ),
                   ],
                 ),
               ),
