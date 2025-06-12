@@ -1,0 +1,142 @@
+{
+  "project_info": {
+    "project_number": "753158983953",
+    "project_id": "animalpedia-4f75b",
+    "storage_bucket": "animalpedia-4f75b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:753158983953:android:22f8961d2d7bb6b3453cb0",
+        "android_client_info": {
+          "package_name": "com.solidevelectrosoft.adopals"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "753158983953-8mrup43dctp1jrniur5okk25u4l5hnn5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDw2F0J4S5fQFOpedCtgKnQLsff6o_dC0M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "753158983953-35u9m5c7nk3kcbej35a6h3ik5eq1baln.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "753158983953-0enjlhjeruskmtneastqjl1b1cuv7bps.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.solidevelectrosoft.adopals"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:753158983953:android:a7ff58f203d03ad5453cb0",
+        "android_client_info": {
+          "package_name": "com.solidevelectrosoft.animalpedia"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "753158983953-9btrbj00mm1jnjlcp2cbagv09fd5mlla.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.solidevelectrosoft.animalpedia",
+            "certificate_hash": "fa68c657f340d09cce98d1de0e7e7ebeb400d672"
+          }
+        },
+        {
+          "client_id": "753158983953-buteer94kg0vphvedp78s0eai0os9nep.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.solidevelectrosoft.animalpedia",
+            "certificate_hash": "57e24b23b552c59eed83f4b81fd14f62f5d185fe"
+          }
+        },
+        {
+          "client_id": "753158983953-ci1tuisg9pbjuoo93meguugemo11i66b.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.solidevelectrosoft.animalpedia",
+            "certificate_hash": "12bd39082376940ef1ada6c4b6ebc1e8727bfd07"
+          }
+        },
+        {
+          "client_id": "753158983953-8mrup43dctp1jrniur5okk25u4l5hnn5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDw2F0J4S5fQFOpedCtgKnQLsff6o_dC0M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "753158983953-35u9m5c7nk3kcbej35a6h3ik5eq1baln.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "753158983953-0enjlhjeruskmtneastqjl1b1cuv7bps.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.solidevelectrosoft.adopals"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:753158983953:android:9eb4a650f041f061453cb0",
+        "android_client_info": {
+          "package_name": "com.solidevelectrosoft.animalpedia1"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "753158983953-8mrup43dctp1jrniur5okk25u4l5hnn5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDw2F0J4S5fQFOpedCtgKnQLsff6o_dC0M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "753158983953-35u9m5c7nk3kcbej35a6h3ik5eq1baln.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "753158983953-0enjlhjeruskmtneastqjl1b1cuv7bps.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.solidevelectrosoft.adopals"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
