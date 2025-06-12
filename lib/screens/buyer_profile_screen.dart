@@ -118,35 +118,54 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
+            // Stack to overlap profile picture half above cover image and above all below content
             Stack(
+              alignment: Alignment.center,
+              clipBehavior: Clip.none,
               children: [
+                // Cover image at the top
                 _coverImage != null
                     ? Image.network(_coverImage!, width: double.infinity, height: 180, fit: BoxFit.cover)
                     : Container(width: double.infinity, height: 180, color: Theme.of(context).colorScheme.surfaceVariant),
+                // Profile picture, half above cover image, z-index above all
                 Positioned(
-                  left: 24,
-                  top: 120,
-                  child: CircleAvatar(
-                    radius: 50,
-                    backgroundImage: _profileImage != null && _profileImage!.isNotEmpty
-                        ? NetworkImage(_profileImage!)
-                        : const AssetImage('assets/images/profile.jpg') as ImageProvider,
-                  ),
-                ),
-                Positioned(
-                  right: 16,
-                  top: 140,
-                  child: IconButton(
-                    icon: const Icon(Icons.edit),
-                    color: Theme.of(context).colorScheme.primary,
-                    onPressed: () {
-                      // TODO: Implement cover/profile image update
-                    },
+                  bottom: -50, // Half of avatar radius
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Material(
+                        elevation: 6,
+                        shape: const CircleBorder(),
+                        clipBehavior: Clip.antiAlias,
+                        child: CircleAvatar(
+                          radius: 50,
+                          backgroundImage: _profileImage != null && _profileImage!.isNotEmpty
+                              ? NetworkImage(_profileImage!)
+                              : const AssetImage('assets/images/profile.jpg') as ImageProvider,
+                        ),
+                      ),
+                      // Positioned(
+                      //   right: -8,
+                      //   bottom: -8,
+                      //   child: Material(
+                      //     elevation: 4,
+                      //     shape: const CircleBorder(),
+                      //     color: Colors.transparent,
+                      //     child: IconButton(
+                      //       icon: const Icon(Icons.edit),
+                      //       color: Theme.of(context).colorScheme.primary,
+                      //       onPressed: () {
+                      //         // TODO: Implement cover/profile image update
+                      //       },
+                      //     ),
+                      //   ),
+                      // ),
+                    ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 60), // Space for avatar overlap
             Text(_userName ?? '', style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 8),
             ElevatedButton(
@@ -264,20 +283,100 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
                             _prefEditMode
                                 ? Column(
                                     children: [
-                                      TextFormField(
-                                        initialValue: _categoriesPref.join(', '),
-                                        decoration: const InputDecoration(labelText: 'Categories (comma separated)'),
-                                        onSaved: (v) => _categoriesPref = v?.split(',').map((e) => e.trim()).toList() ?? [],
+                                      // Multi-select for categories
+                                      DropdownButtonFormField<String>(
+                                        isExpanded: true,
+                                        value: null,
+                                        items: [
+                                          ...['Dog', 'Cat', 'Bird', 'Rabbit', 'Other'] // Example categories
+                                              .map((cat) => DropdownMenuItem(
+                                                    value: cat,
+                                                    child: Row(
+                                                      children: [
+                                                        Checkbox(
+                                                          value: _categoriesPref.contains(cat),
+                                                          onChanged: (checked) {
+                                                            setState(() {
+                                                              if (checked == true) {
+                                                                if (!_categoriesPref.contains(cat)) _categoriesPref.add(cat);
+                                                              } else {
+                                                                _categoriesPref.remove(cat);
+                                                              }
+                                                            });
+                                                          },
+                                                        ),
+                                                        Text(cat),
+                                                      ],
+                                                    ),
+                                                  ))
+                                        ],
+                                        onChanged: (_) {},
+                                        decoration: const InputDecoration(labelText: 'Categories'),
+                                        selectedItemBuilder: (context) => _categoriesPref.map((e) => Text(e)).toList(),
                                       ),
-                                      TextFormField(
-                                        initialValue: _breedsPref.join(', '),
-                                        decoration: const InputDecoration(labelText: 'Breeds (comma separated)'),
-                                        onSaved: (v) => _breedsPref = v?.split(',').map((e) => e.trim()).toList() ?? [],
+                                      const SizedBox(height: 8),
+                                      // Multi-select for breeds
+                                      DropdownButtonFormField<String>(
+                                        isExpanded: true,
+                                        value: null,
+                                        items: [
+                                          ...['Labrador', 'Persian', 'Parrot', 'Lionhead', 'Other'] // Example breeds
+                                              .map((breed) => DropdownMenuItem(
+                                                    value: breed,
+                                                    child: Row(
+                                                      children: [
+                                                        Checkbox(
+                                                          value: _breedsPref.contains(breed),
+                                                          onChanged: (checked) {
+                                                            setState(() {
+                                                              if (checked == true) {
+                                                                if (!_breedsPref.contains(breed)) _breedsPref.add(breed);
+                                                              } else {
+                                                                _breedsPref.remove(breed);
+                                                              }
+                                                            });
+                                                          },
+                                                        ),
+                                                        Text(breed),
+                                                      ],
+                                                    ),
+                                                  ))
+                                        ],
+                                        onChanged: (_) {},
+                                        decoration: const InputDecoration(labelText: 'Breeds'),
+                                        selectedItemBuilder: (context) => _breedsPref.map((e) => Text(e)).toList(),
                                       ),
-                                      TextFormField(
-                                        initialValue: _gendersPref.join(', '),
-                                        decoration: const InputDecoration(labelText: 'Genders (comma separated)'),
-                                        onSaved: (v) => _gendersPref = v?.split(',').map((e) => e.trim()).toList() ?? [],
+                                      const SizedBox(height: 8),
+                                      // Multi-select for genders
+                                      DropdownButtonFormField<String>(
+                                        isExpanded: true,
+                                        value: null,
+                                        items: [
+                                          ...['Male', 'Female', 'Other'] // Example genders
+                                              .map((gender) => DropdownMenuItem(
+                                                    value: gender,
+                                                    child: Row(
+                                                      children: [
+                                                        Checkbox(
+                                                          value: _gendersPref.contains(gender),
+                                                          onChanged: (checked) {
+                                                            setState(() {
+                                                              if (checked == true) {
+                                                                if (!_gendersPref.contains(gender)) _gendersPref.add(gender);
+                                                              } else {
+                                                                _gendersPref.remove(gender);
+                                                              }
+                                                            });
+                                                          },
+                                                        ),
+                                                        Text(gender),
+                                                      ],
+                                                    ),
+                                                  ))
+                                        ],
+                                        onChanged: (_) {},
+                                        decoration: const InputDecoration(labelText: 'Genders'),
+                                        selectedItemBuilder: (context) => _gendersPref.map((e) => Text(e)).toList(),
                                       ),
                                       Row(
                                         children: [

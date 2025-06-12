@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../buyer_dashboard_screen.dart';
 
@@ -28,6 +29,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final _forgotPasswordEmailController = TextEditingController();
   String? _forgotPasswordMessage;
 
+  final _secureStorage = const FlutterSecureStorage();
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -35,6 +38,49 @@ class _LoginScreenState extends State<LoginScreen> {
     _confirmPasswordController.dispose();
     _forgotPasswordEmailController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _redirectIfLoggedIn();
+    _loadRememberedCredentials();
+  }
+
+  void _redirectIfLoggedIn() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const BuyerDashboardScreen()),
+        );
+      });
+    }
+  }
+
+  Future<void> _loadRememberedCredentials() async {
+    final savedEmail = await _secureStorage.read(key: 'email');
+    final savedPassword = await _secureStorage.read(key: 'password');
+    if (savedEmail != null && savedPassword != null) {
+      setState(() {
+        _emailController.text = savedEmail;
+        _passwordController.text = savedPassword;
+        _rememberMe = true;
+      });
+      // Optionally, auto-login:
+      // _signInWithEmail();
+    }
+  }
+
+  Future<void> _handleRememberMe() async {
+    if (_rememberMe) {
+      await _secureStorage.write(key: 'email', value: _emailController.text.trim());
+      await _secureStorage.write(key: 'password', value: _passwordController.text.trim());
+    } else {
+      await _secureStorage.delete(key: 'email');
+      await _secureStorage.delete(key: 'password');
+    }
   }
 
   Future<void> _signInWithEmail() async {
@@ -48,9 +94,8 @@ class _LoginScreenState extends State<LoginScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
-      //navigate to buyer_dashboard_screen
-      // For example:
-       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const BuyerDashboardScreen()));
+      await _handleRememberMe();
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const BuyerDashboardScreen()));
     } on FirebaseAuthException catch (e) {
       setState(() {
         _errorMessage = e.message;
@@ -79,6 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+      await _handleRememberMe();
       // Navigate to home or main screen
     } on FirebaseAuthException catch (e) {
       setState(() {

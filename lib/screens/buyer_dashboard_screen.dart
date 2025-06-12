@@ -1,63 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'pet_details_screen.dart'; // Import the PetDetailsScreen
 import 'common_app_bar.dart';
 import '../../theme_service.dart';
 import '../../theme_service_provider.dart';
-
-class PetModel {
-  final String id;
-  final String name;
-  final String? breed;
-  final String? category;
-  final String? description;
-  final String? location;
-  final String? gender;
-  final double? price;
-  final List<String>? photos;
-  final List<String>? thumbnails;
-  final bool isFavorite;
-  final String? age;
-
-  PetModel({
-    required this.id,
-    required this.name,
-    this.breed,
-    this.category,
-    this.description,
-    this.location,
-    this.gender,
-    this.price,
-    this.photos,
-    this.thumbnails,
-    this.isFavorite = false,
-    this.age,
-  });
-
-  factory PetModel.fromMap(Map<String, dynamic> data, String id, {List<String>? favoritePetIds}) {
-    return PetModel(
-      id: id,
-      name: data['name'] ?? '',
-      breed: data['breed'] is Map ? data['breed']['name'] : data['breed']?.toString(),
-      category: data['category'] is Map ? data['category']['name'] : data['category']?.toString(),
-      description: data['description'],
-      location: data['location'],
-      gender: data['gender'],
-      price: (data['price'] is int)
-          ? (data['price'] as int).toDouble()
-          : (data['price'] is double)
-              ? data['price'] as double
-              : (data['price'] is String)
-                  ? double.tryParse(data['price'])
-                  : null,
-      photos: (data['photos'] as List?)?.map((e) => e.toString()).toList(),
-      thumbnails: (data['thumbnails'] as List?)?.map((e) => e.toString()).toList(),
-      isFavorite: favoritePetIds?.contains(id) ?? false,
-      age: data['age']?.toString(),
-    );
-  }
-}
+import '../models/pet_model.dart';
 
 class BuyerDashboardScreen extends StatefulWidget {
   const BuyerDashboardScreen({super.key});
@@ -80,6 +29,7 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
   List<String> _favoritePetIds = [];
   late ThemeService _themeService;
   bool _themeServiceInitialized = false;
+  final _secureStorage = const FlutterSecureStorage();
 
   @override
   void didChangeDependencies() {
@@ -98,6 +48,12 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
     if (user != null) {
       _userId = user.uid;
       _userName = user.displayName ?? user.email?.split('@').first ?? 'Buyer';
+    } else {
+      // If not logged in, redirect to login screen
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).pushReplacementNamed('/login');
+      });
+      return;
     }
     _initializeDashboard();
   }
@@ -114,13 +70,18 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
     setState(() => _isLoading = true);
     try {
       final petsSnapshot = await FirebaseFirestore.instance.collection('pets').orderBy('createdAt', descending: true).get();
-      final pets = petsSnapshot.docs.map((doc) => PetModel.fromMap(doc.data(), doc.id, favoritePetIds: _favoritePetIds)).toList();
+      final pets = petsSnapshot.docs.map((doc) {
+        final data = doc.data();
+        // Defensive: ensure all required fields are present and types are correct
+        return PetModel.fromMap(data, doc.id, favoritePetIds: _favoritePetIds);
+      }).where((pet) => pet != null).toList();
       setState(() {
         _allPets = pets;
         _applyTabFilter();
         _isLoading = false;
       });
-    } catch (e) {
+    } catch (e, st) {
+      debugPrint('Error fetching pets: $e\n$st');
       setState(() => _isLoading = false);
     }
   }
@@ -156,7 +117,7 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
   void _onSearchChanged(String value) {
     setState(() {
       _searchQuery = value;
-      _pets = _allPets.where((pet) => pet.name.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
+      _pets = _allPets.where((pet) => (pet.name ?? '').toLowerCase().contains(_searchQuery.toLowerCase())).toList();
     });
   }
 
@@ -178,10 +139,23 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
       _petsLabel = 'Favorite Pets';
       _pets = _allPets.where((p) => _favoritePetIds.contains(p.id)).toList();
     }
+    // Ensure search filter is applied after tab filter
+    if (_searchQuery.isNotEmpty) {
+      _pets = _pets.where((pet) => (pet.name ?? '').toLowerCase().contains(_searchQuery.toLowerCase())).toList();
+    }
   }
 
   void _loadMorePets() {
     // TODO: Implement pagination or load more logic
+  }
+
+  Future<void> _logout() async {
+    await FirebaseAuth.instance.signOut();
+    await _secureStorage.delete(key: 'email');
+    await _secureStorage.delete(key: 'password');
+    if (mounted) {
+      Navigator.of(context).pushReplacementNamed('/login');
+    }
   }
 
   @override
@@ -210,7 +184,7 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
           },
           onNotificationTap: () {},
           onLogoTap: () {},
-          onLogout: () {},
+          onLogout: _logout,
           onSwitchRole: () {},
           onRegisterSeller: () {},
           isSeller: false,
@@ -285,8 +259,8 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
                                             ? CircleAvatar(backgroundImage: NetworkImage(pet.thumbnails![0]))
                                             : (pet.photos != null && pet.photos!.isNotEmpty)
                                                 ? CircleAvatar(backgroundImage: NetworkImage(pet.photos![0]))
-                                                : CircleAvatar(child: Text(pet.name[0])),
-                                        title: Text(pet.name),
+                                                : CircleAvatar(child: Text((pet.name != null && (pet.name?.isNotEmpty ?? false)) ? pet.name![0] : '?')),
+                                        title: Text(pet.name ?? ''),
                                         subtitle: Text(pet.breed ?? ''),
                                         trailing: Icon(
                                           pet.isFavorite ? Icons.favorite : Icons.favorite_border,

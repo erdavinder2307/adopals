@@ -1,4 +1,6 @@
 import 'package:adopals/screens/home_screen.dart';
+import 'package:adopals/screens/authentication/login_screen.dart';
+import 'package:adopals/screens/buyer_dashboard_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
@@ -58,6 +60,10 @@ class _MyAppState extends State<MyApp> {
       title: 'Adopals',
       theme: themeService.themeData,
       home: const HomeScreen(),
+      routes: {
+        '/login': (context) => const LoginScreen(),
+        '/dashboard': (context) => const BuyerDashboardScreen(),
+      },
     );
   }
 }
