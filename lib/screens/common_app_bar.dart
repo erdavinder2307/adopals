@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:adopals/screens/buyer_profile_screen.dart'; // Import the BuyerProfileScreen
 
 class CommonAppBar extends StatefulWidget implements PreferredSizeWidget {
@@ -51,17 +49,6 @@ class CommonAppBar extends StatefulWidget implements PreferredSizeWidget {
 }
 
 class _CommonAppBarState extends State<CommonAppBar> {
-  Color _parseColor(dynamic colorValue) {
-    if (colorValue is int) {
-      return Color(colorValue);
-    }
-    if (colorValue is String && colorValue.startsWith('#')) {
-      return Color(int.parse(colorValue.replaceFirst('#', '0xff')));
-    }
-    // Fallback to purple if not a valid hex string
-    return Colors.purple;
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);

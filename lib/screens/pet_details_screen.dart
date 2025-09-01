@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
-import '../screens/buyer_dashboard_screen.dart';
+import '../models/pet_model.dart';
 
 class PetDetailsScreen extends StatefulWidget {
   final PetModel pet;
@@ -15,14 +14,11 @@ class PetDetailsScreen extends StatefulWidget {
 
 class _PetDetailsScreenState extends State<PetDetailsScreen> {
   int _quantity = 1;
-  bool _isInCart = false;
-  bool _isFavorite = false;
+  final bool _isInCart = false;
   bool _isZoomModalOpen = false;
   int _currentIndex = 0;
   String? _zoomPhoto;
   String? _sellerName;
-  String? _sellerId;
-  double? _sellerRating;
   bool _loadingSeller = false;
 
   @override
@@ -36,11 +32,10 @@ class _PetDetailsScreenState extends State<PetDetailsScreen> {
     setState(() => _loadingSeller = true);
     try {
       final petData = widget.pet;
-      if (petData != null && petData.id.isNotEmpty) {
+      if (petData != null && petData.id != null) {
         final petDoc = await FirebaseFirestore.instance.collection('pets').doc(petData.id).get();
         final sellerId = petDoc.data()?['createdBy'];
         if (sellerId != null) {
-          _sellerId = sellerId;
           final userDoc = await FirebaseFirestore.instance.collection('users').doc(sellerId).get();
           _sellerName = userDoc.data()?['name'] ?? 'Seller';
           // TODO: Fetch seller rating if available

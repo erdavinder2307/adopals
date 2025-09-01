@@ -1,63 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../models/pet_model.dart';
 import 'pet_details_screen.dart'; // Import the PetDetailsScreen
 import 'common_app_bar.dart';
-import '../../theme_service.dart';
-import '../../theme_service_provider.dart';
-
-class PetModel {
-  final String id;
-  final String name;
-  final String? breed;
-  final String? category;
-  final String? description;
-  final String? location;
-  final String? gender;
-  final double? price;
-  final List<String>? photos;
-  final List<String>? thumbnails;
-  final bool isFavorite;
-  final String? age;
-
-  PetModel({
-    required this.id,
-    required this.name,
-    this.breed,
-    this.category,
-    this.description,
-    this.location,
-    this.gender,
-    this.price,
-    this.photos,
-    this.thumbnails,
-    this.isFavorite = false,
-    this.age,
-  });
-
-  factory PetModel.fromMap(Map<String, dynamic> data, String id, {List<String>? favoritePetIds}) {
-    return PetModel(
-      id: id,
-      name: data['name'] ?? '',
-      breed: data['breed'] is Map ? data['breed']['name'] : data['breed']?.toString(),
-      category: data['category'] is Map ? data['category']['name'] : data['category']?.toString(),
-      description: data['description'],
-      location: data['location'],
-      gender: data['gender'],
-      price: (data['price'] is int)
-          ? (data['price'] as int).toDouble()
-          : (data['price'] is double)
-              ? data['price'] as double
-              : (data['price'] is String)
-                  ? double.tryParse(data['price'])
-                  : null,
-      photos: (data['photos'] as List?)?.map((e) => e.toString()).toList(),
-      thumbnails: (data['thumbnails'] as List?)?.map((e) => e.toString()).toList(),
-      isFavorite: favoritePetIds?.contains(id) ?? false,
-      age: data['age']?.toString(),
-    );
-  }
-}
+import '../theme_service.dart';
+import '../theme_service_provider.dart';
 
 class BuyerDashboardScreen extends StatefulWidget {
   const BuyerDashboardScreen({super.key});
@@ -73,8 +21,6 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
   String _petsLabel = 'Recommended Pets...';
   List<PetModel> _pets = [];
   List<PetModel> _allPets = [];
-  List<PetModel> _favoritePets = [];
-  List<PetModel> _recentlyViewedPets = [];
   String _userName = 'Buyer';
   String? _userId; // TODO: Set this from auth
   List<String> _favoritePetIds = [];
@@ -130,26 +76,6 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
     final favSnapshot = await FirebaseFirestore.instance.collection('favorites').where('userId', isEqualTo: _userId).get();
     setState(() {
       _favoritePetIds = favSnapshot.docs.map((doc) => doc['petId'] as String).toList();
-      _favoritePets = _allPets.where((p) => _favoritePetIds.contains(p.id)).toList();
-    });
-  }
-
-  Future<void> _fetchRecentlyViewedPets() async {
-    if (_userId == null) return;
-    final recentSnapshot = await FirebaseFirestore.instance
-        .collection('recently-viewed-pets')
-        .where('userId', isEqualTo: _userId)
-        .orderBy('timestamp', descending: true)
-        .limit(5)
-        .get();
-    final petIds = recentSnapshot.docs.map((doc) => doc['petId'] as String).toList();
-    if (petIds.isEmpty) {
-      setState(() => _recentlyViewedPets = []);
-      return;
-    }
-    final petsSnapshot = await FirebaseFirestore.instance.collection('pets').where(FieldPath.documentId, whereIn: petIds).get();
-    setState(() {
-      _recentlyViewedPets = petsSnapshot.docs.map((doc) => PetModel.fromMap(doc.data(), doc.id, favoritePetIds: _favoritePetIds)).toList();
     });
   }
 
