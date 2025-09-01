@@ -11,7 +11,7 @@ plugins {
 android {
     namespace = "com.solidevelectrosoft.adopals"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "21.2.6472646"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
