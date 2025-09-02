@@ -96,8 +96,8 @@ class _CommonAppBarState extends State<CommonAppBar> with TickerProviderStateMix
     final isBuyer = widget.currentUserRole == 'buyer';
 
     return AppBar(
-      backgroundColor: colorScheme.surface,
-      foregroundColor: colorScheme.onSurface,
+      backgroundColor: colorScheme.primary, // Changed from surface to primary
+      foregroundColor: colorScheme.onPrimary, // Changed from onSurface to onPrimary
       elevation: 0,
       scrolledUnderElevation: 1,
       centerTitle: false,
@@ -175,12 +175,12 @@ class _CommonAppBarState extends State<CommonAppBar> with TickerProviderStateMix
                     width: 28,
                     height: 28,
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary,
+                      color: Theme.of(context).colorScheme.onPrimary,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Icon(
                       Icons.pets,
-                      color: Theme.of(context).colorScheme.onPrimary,
+                      color: Theme.of(context).colorScheme.primary,
                       size: 18, // Reduced from 20
                     ),
                   );
@@ -195,7 +195,7 @@ class _CommonAppBarState extends State<CommonAppBar> with TickerProviderStateMix
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
                 fontSize: 20, // Slightly reduced
-                color: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).colorScheme.onPrimary, // Changed to onPrimary for better contrast
               ),
               overflow: TextOverflow.ellipsis,
               maxLines: 1,
@@ -268,13 +268,13 @@ class _CommonAppBarState extends State<CommonAppBar> with TickerProviderStateMix
               Container(
                 margin: const EdgeInsets.all(2), // Reduced from 4
                 decoration: BoxDecoration(
-                  color: colorScheme.surfaceVariant,
+                  color: colorScheme.onPrimary.withOpacity(0.2), // Better contrast with primary background
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: IconButton(
                   icon: Icon(
                     Icons.notifications_outlined,
-                    color: colorScheme.onSurfaceVariant,
+                    color: colorScheme.onPrimary, // Use onPrimary for better contrast
                   ),
                   onPressed: () {
                     _notificationController.forward().then((_) {
@@ -325,13 +325,13 @@ class _CommonAppBarState extends State<CommonAppBar> with TickerProviderStateMix
     return Container(
       margin: const EdgeInsets.all(2), // Reduced from 4
       decoration: BoxDecoration(
-        color: colorScheme.surfaceVariant,
+        color: colorScheme.onPrimary.withOpacity(0.2), // Better contrast with primary background
         borderRadius: BorderRadius.circular(12),
       ),
       child: IconButton(
         icon: Icon(
           widget.isDarkTheme ? Icons.light_mode : Icons.dark_mode,
-          color: colorScheme.onSurfaceVariant,
+          color: colorScheme.onPrimary, // Use onPrimary for better contrast
         ),
         onPressed: _showThemeBottomSheet,
         tooltip: 'Theme Settings',
@@ -343,7 +343,7 @@ class _CommonAppBarState extends State<CommonAppBar> with TickerProviderStateMix
     return Container(
       margin: const EdgeInsets.all(2), // Reduced from 4
       decoration: BoxDecoration(
-        color: colorScheme.surfaceVariant,
+        color: colorScheme.onPrimary.withOpacity(0.2), // Better contrast with primary background
         borderRadius: BorderRadius.circular(12),
       ),
       child: IconButton(
@@ -358,14 +358,14 @@ class _CommonAppBarState extends State<CommonAppBar> with TickerProviderStateMix
                   errorBuilder: (context, error, stackTrace) {
                     return Icon(
                       Icons.account_circle,
-                      color: colorScheme.onSurfaceVariant,
+                      color: colorScheme.onPrimary, // Use onPrimary for better contrast
                       size: 24,
                     );
                   },
                 )
               : Icon(
                   Icons.account_circle,
-                  color: colorScheme.onSurfaceVariant,
+                  color: colorScheme.onPrimary, // Use onPrimary for better contrast
                   size: 24,
                 ),
         ),

@@ -491,11 +491,14 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
     return DefaultTabController(
       length: 3,
       initialIndex: _selectedTabIndex,
       child: Scaffold(
-        backgroundColor: Colors.grey.shade50,
+        backgroundColor: colorScheme.background, // Use theme background
         appBar: CommonAppBar(
           currentUserRole: 'buyer',
           cartCount: _favoritePetIds.length,
@@ -539,9 +542,9 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    const Color(0xFFE066E0).withOpacity(0.15),
-                    const Color(0xFF6C63FF).withOpacity(0.1),
-                    Colors.white.withOpacity(0.95),
+                    colorScheme.primary.withOpacity(0.15),
+                    colorScheme.secondary.withOpacity(0.1),
+                    colorScheme.surface.withOpacity(0.95),
                   ],
                 ),
               ),
@@ -611,15 +614,15 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFE066E0).withOpacity(0.1),
+                        color: colorScheme.primary.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFE066E0).withOpacity(0.2)),
+                        border: Border.all(color: colorScheme.primary.withOpacity(0.2)),
                       ),
                       child: Row(
                         children: [
                           Icon(
                             Icons.auto_awesome,
-                            color: const Color(0xFFE066E0),
+                            color: colorScheme.primary,
                             size: 20,
                           ),
                           const SizedBox(width: 8),
@@ -628,7 +631,7 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
                               'Find your perfect companion with AI-powered recommendations',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Colors.grey.shade700,
+                                color: colorScheme.onSurface,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -650,11 +653,11 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
                     // Enhanced Search and Filter Section
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: colorScheme.surface,
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.grey.withOpacity(0.08),
+                            color: colorScheme.shadow.withOpacity(0.08),
                             spreadRadius: 0,
                             blurRadius: 20,
                             offset: const Offset(0, 4),
@@ -732,11 +735,11 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
                     // Enhanced Tab Section
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: colorScheme.surface,
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.grey.withOpacity(0.08),
+                            color: colorScheme.shadow.withOpacity(0.08),
                             spreadRadius: 0,
                             blurRadius: 20,
                             offset: const Offset(0, 4),
@@ -926,14 +929,14 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
             onPressed: () {
               // TODO: Open AI chat assistant
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('AI Assistant coming soon!'),
-                  backgroundColor: Color(0xFFE066E0),
+                SnackBar(
+                  content: const Text('AI Assistant coming soon!'),
+                  backgroundColor: colorScheme.primary,
                 ),
               );
             },
-            backgroundColor: const Color(0xFFE066E0),
-            foregroundColor: Colors.white,
+            backgroundColor: colorScheme.primary,
+            foregroundColor: colorScheme.onPrimary,
             elevation: 4,
             icon: const Icon(Icons.auto_awesome),
             label: const Text(
@@ -951,6 +954,9 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
   }
 
   Widget _buildEnhancedPetCard(PetModel pet, int index) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -959,8 +965,8 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade200, width: 1),
-          color: Colors.white,
+          border: Border.all(color: colorScheme.outline.withOpacity(0.2), width: 1),
+          color: colorScheme.surface,
         ),
         child: InkWell(
           onTap: () async {
@@ -1201,6 +1207,9 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
   }
 
   Widget _buildFilterChip(String label, IconData icon, bool isSelected) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -1212,10 +1221,10 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFE066E0) : Colors.grey.shade100,
+          color: isSelected ? colorScheme.primary : colorScheme.surfaceVariant,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? const Color(0xFFE066E0) : Colors.grey.shade300,
+            color: isSelected ? colorScheme.primary : colorScheme.outline.withOpacity(0.3),
           ),
         ),
         child: Row(
@@ -1224,7 +1233,7 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
             Icon(
               icon,
               size: 16,
-              color: isSelected ? Colors.white : Colors.grey.shade600,
+              color: isSelected ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
             ),
             const SizedBox(width: 6),
             Text(
@@ -1232,7 +1241,7 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
-                color: isSelected ? Colors.white : Colors.grey.shade600,
+                color: isSelected ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
               ),
             ),
           ],
