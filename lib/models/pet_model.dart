@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class PetModel {
   final String? id;
   final String name;
@@ -58,7 +60,11 @@ class PetModel {
       isFavorite: favoritePetIds?.contains(id) ?? false,
       age: data['age']?.toString(),
       sellerId: data['sellerId']?.toString(),
-      createdAt: data['createdAt'] != null ? DateTime.fromMillisecondsSinceEpoch(data['createdAt']) : null,
+      createdAt: data['createdAt'] != null 
+          ? (data['createdAt'] is Timestamp 
+              ? (data['createdAt'] as Timestamp).toDate()
+              : DateTime.fromMillisecondsSinceEpoch(data['createdAt']))
+          : null,
       isFeatured: data['isFeatured'] ?? false,
       breedInfo: data['breed'] is Map ? data['breed'] : null,
       categoryInfo: data['category'] is Map ? data['category'] : null,

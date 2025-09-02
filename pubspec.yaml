@@ -38,6 +38,7 @@ dependencies:
   flutter_facebook_auth: ^7.1.2
   cloud_firestore: ^5.6.9
   flutter_svg: ^2.0.10+1
+  intl_phone_field: ^3.2.0
 
 dev_dependencies:
   # The "flutter_lints" package below contains a set of recommended lints to
