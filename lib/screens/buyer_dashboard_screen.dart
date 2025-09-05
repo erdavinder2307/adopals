@@ -433,6 +433,7 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
   }
 
   Widget _buildEmptyState() {
+    final colorScheme = Theme.of(context).colorScheme;
     String title, subtitle;
     IconData icon;
     
@@ -457,13 +458,13 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.grey.shade100,
+              color: colorScheme.surfaceVariant,
               shape: BoxShape.circle,
             ),
             child: Icon(
               icon,
               size: 48,
-              color: Colors.grey.shade400,
+              color: colorScheme.onSurfaceVariant.withOpacity(0.6),
             ),
           ),
           const SizedBox(height: 20),
@@ -471,7 +472,7 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
             title,
             style: TextStyle(
               fontSize: 18,
-              color: Colors.grey.shade700,
+              color: colorScheme.onSurface,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -480,7 +481,7 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
             subtitle,
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey.shade500,
+              color: colorScheme.onSurface.withOpacity(0.7),
             ),
             textAlign: TextAlign.center,
           ),
@@ -542,9 +543,9 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    colorScheme.primary.withOpacity(0.15),
-                    colorScheme.secondary.withOpacity(0.1),
-                    colorScheme.surface.withOpacity(0.95),
+                    colorScheme.primaryContainer.withOpacity(0.3),
+                    colorScheme.secondaryContainer.withOpacity(0.2),
+                    colorScheme.surface,
                   ],
                 ),
               ),
@@ -563,17 +564,17 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
                                 'Welcome back,',
                                 style: TextStyle(
                                   fontSize: 16,
-                                  color: Colors.grey.shade600,
+                                  color: Colors.white,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 _userName,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 28,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
+                                  color: colorScheme.onSurface,
                                 ),
                               ),
                             ],
@@ -583,25 +584,32 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.8),
+                            color: colorScheme.surface,
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: Colors.grey.shade200),
+                            border: Border.all(color: colorScheme.outline.withOpacity(0.3)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: colorScheme.shadow.withOpacity(0.1),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
                           child: Column(
                             children: [
                               Text(
                                 '${_favoritePetIds.length}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFFE066E0),
+                                  color: colorScheme.primary,
                                 ),
                               ),
                               Text(
                                 'Favorites',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Colors.grey.shade600,
+                                  color: colorScheme.onSurface.withOpacity(0.8),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -614,9 +622,9 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: colorScheme.primary.withOpacity(0.1),
+                        color: colorScheme.primaryContainer.withOpacity(0.3),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: colorScheme.primary.withOpacity(0.2)),
+                        border: Border.all(color: colorScheme.primary.withOpacity(0.3)),
                       ),
                       child: Row(
                         children: [
@@ -631,7 +639,7 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
                               'Find your perfect companion with AI-powered recommendations',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: colorScheme.onSurface,
+                                color: Colors.white,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -671,9 +679,9 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
                             // Search Bar
                             Container(
                               decoration: BoxDecoration(
-                                color: Colors.grey.shade50,
+                                color: colorScheme.surfaceVariant,
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.grey.shade200),
+                                border: Border.all(color: colorScheme.outline.withOpacity(0.2)),
                               ),
                               child: TextField(
                                 decoration: InputDecoration(
@@ -681,19 +689,19 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
                                     padding: const EdgeInsets.all(12),
                                     child: Icon(
                                       Icons.search,
-                                      color: Colors.grey.shade600,
+                                      color: colorScheme.onSurfaceVariant,
                                       size: 20,
                                     ),
                                   ),
                                   suffixIcon: _searchQuery.isNotEmpty
                                       ? IconButton(
-                                          icon: Icon(Icons.clear, color: Colors.grey.shade600),
+                                          icon: Icon(Icons.clear, color: colorScheme.onSurfaceVariant),
                                           onPressed: () => _onSearchChanged(''),
                                         )
                                       : null,
                                   hintText: 'Search by name, breed, location...',
                                   hintStyle: TextStyle(
-                                    color: Colors.grey.shade500,
+                                    color: colorScheme.onSurfaceVariant.withOpacity(0.7),
                                     fontSize: 15,
                                   ),
                                   border: InputBorder.none,
@@ -702,6 +710,7 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
                                     vertical: 16,
                                   ),
                                 ),
+                                style: TextStyle(color: colorScheme.onSurface),
                                 onChanged: _onSearchChanged,
                               ),
                             ),
@@ -756,25 +765,25 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
                                 Expanded(
                                   child: Text(
                                     _petsLabel,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.black87,
+                                      color: colorScheme.onSurface,
                                     ),
                                   ),
                                 ),
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFE066E0).withOpacity(0.1),
+                                    color: colorScheme.primary.withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Text(
                                     '${_pets.length} pets',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
-                                      color: Color(0xFFE066E0),
+                                      color: colorScheme.primary,
                                     ),
                                   ),
                                 ),
@@ -786,15 +795,15 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
                           Container(
                             margin: const EdgeInsets.symmetric(horizontal: 20),
                             decoration: BoxDecoration(
-                              color: Colors.grey.shade50,
+                              color: colorScheme.surfaceVariant,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: TabBar(
                               onTap: _onTabChanged,
-                              labelColor: Colors.white,
-                              unselectedLabelColor: Colors.grey.shade600,
+                              labelColor: colorScheme.onPrimary,
+                              unselectedLabelColor: colorScheme.onSurfaceVariant,
                               indicator: BoxDecoration(
-                                color: const Color(0xFFE066E0),
+                                color: colorScheme.primary,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               indicatorPadding: const EdgeInsets.all(4),
@@ -849,9 +858,9 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
                                 _isLoading
                                     ? SizedBox(
                                         height: 200,
-                                        child: const Center(
+                                        child: Center(
                                           child: CircularProgressIndicator(
-                                            color: Color(0xFFE066E0),
+                                            color: colorScheme.primary,
                                           ),
                                         ),
                                       )
@@ -886,7 +895,7 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
                                           'Showing ${_pets.length} of ${_getAllFilteredPetsCount()} pets',
                                           style: TextStyle(
                                             fontSize: 14,
-                                            color: Colors.grey.shade600,
+                                            color: colorScheme.onSurface.withOpacity(0.7),
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
@@ -896,8 +905,8 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
                                           icon: const Icon(Icons.expand_more, size: 18),
                                           label: const Text('Load More'),
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor: const Color(0xFFE066E0),
-                                            foregroundColor: Colors.white,
+                                            backgroundColor: colorScheme.primary,
+                                            foregroundColor: colorScheme.onPrimary,
                                             padding: const EdgeInsets.symmetric(
                                               horizontal: 24,
                                               vertical: 12,
@@ -996,7 +1005,7 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
                           topLeft: Radius.circular(16),
                           topRight: Radius.circular(16),
                         ),
-                        color: Colors.grey.shade100,
+                        color: colorScheme.surfaceVariant,
                       ),
                       child: ClipRRect(
                         borderRadius: const BorderRadius.only(
@@ -1042,7 +1051,7 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
                             color: Colors.orange,
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Featured',
                             style: TextStyle(
                               color: Colors.white,
@@ -1060,12 +1069,12 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.9),
+                          color: colorScheme.surface.withOpacity(0.9),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
                           pet.isFavorite ? Icons.favorite : Icons.favorite_border,
-                          color: pet.isFavorite ? Colors.red : Colors.grey.shade600,
+                          color: pet.isFavorite ? Colors.red : colorScheme.onSurfaceVariant,
                           size: 18,
                         ),
                       ),
@@ -1087,10 +1096,10 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
                       Flexible(
                         child: Text(
                           pet.name,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                            color: colorScheme.onSurface,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -1107,7 +1116,7 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
                                 pet.breed ?? 'Mixed Breed',
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: Colors.grey.shade600,
+                                  color: colorScheme.onSurface.withOpacity(0.7),
                                   fontWeight: FontWeight.w500,
                                 ),
                                 maxLines: 1,
@@ -1118,14 +1127,14 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFE066E0).withOpacity(0.1),
+                                  color: colorScheme.primary.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
                                   pet.age!,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 10,
-                                    color: Color(0xFFE066E0),
+                                    color: colorScheme.primary,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -1142,7 +1151,7 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
                             Icon(
                               Icons.location_on,
                               size: 12,
-                              color: Colors.grey.shade500,
+                              color: colorScheme.onSurface.withOpacity(0.6),
                             ),
                             const SizedBox(width: 4),
                             Expanded(
@@ -1150,7 +1159,7 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
                                 pet.location ?? 'Unknown',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Colors.grey.shade500,
+                                  color: colorScheme.onSurface.withOpacity(0.6),
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -1159,10 +1168,10 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
                             if (pet.price != null)
                               Text(
                                 '\$${pet.price!.toStringAsFixed(0)}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFFE066E0),
+                                  color: colorScheme.primary,
                                 ),
                               ),
                           ],
@@ -1180,17 +1189,19 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
   }
 
   Widget _buildPlaceholderImage(String petName) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Container(
       width: double.infinity,
       height: double.infinity,
-      color: Colors.grey.shade200,
+      color: colorScheme.surfaceVariant,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
             Icons.pets,
             size: 40,
-            color: Colors.grey.shade400,
+            color: colorScheme.onSurfaceVariant.withOpacity(0.6),
           ),
           const SizedBox(height: 8),
           Text(
@@ -1198,7 +1209,7 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.grey.shade600,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
         ],
