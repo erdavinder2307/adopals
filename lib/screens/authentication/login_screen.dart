@@ -1,9 +1,15 @@
+import 'dart:convert';
+import 'dart:io' show Platform;
+import 'dart:math';
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:crypto/crypto.dart';
 
 import '../buyer_dashboard_screen.dart';
 
@@ -156,7 +162,9 @@ class _LoginScreenState extends State<LoginScreen> {
         idToken: googleAuth.idToken,
       );
       await FirebaseAuth.instance.signInWithCredential(credential);
-      // Navigate to home or main screen
+      if (mounted) {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const BuyerDashboardScreen()));
+      }
     } on FirebaseAuthException catch (e) {
       setState(() {
         _errorMessage = e.message;
@@ -168,21 +176,39 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Future<void> _signInWithFacebook() async {
+  String _generateNonce([int length = 32]) {
+    const charset = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-._';
+    final random = Random.secure();
+    return List.generate(length, (_) => charset[random.nextInt(charset.length)]).join();
+  }
+
+  String _sha256ofString(String input) => sha256.convert(utf8.encode(input)).toString();
+
+  Future<void> _signInWithApple() async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
     try {
-      final LoginResult result = await FacebookAuth.instance.login();
-      if (result.status == LoginStatus.success) {
-        final OAuthCredential facebookAuthCredential =
-            FacebookAuthProvider.credential(result.accessToken!.tokenString);
-        await FirebaseAuth.instance.signInWithCredential(facebookAuthCredential);
-        // Navigate to home or main screen
-      } else {
+      final rawNonce = _generateNonce();
+      final nonce = _sha256ofString(rawNonce);
+      final appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [AppleIDAuthorizationScopes.email, AppleIDAuthorizationScopes.fullName],
+        nonce: nonce,
+      );
+      final oauthCredential = OAuthProvider('apple.com').credential(
+        idToken: appleCredential.identityToken,
+        rawNonce: rawNonce,
+        accessToken: appleCredential.authorizationCode,
+      );
+      await FirebaseAuth.instance.signInWithCredential(oauthCredential);
+      if (mounted) {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const BuyerDashboardScreen()));
+      }
+    } on SignInWithAppleAuthorizationException catch (e) {
+      if (e.code != AuthorizationErrorCode.canceled) {
         setState(() {
-          _errorMessage = result.message;
+          _errorMessage = e.message;
         });
       }
     } on FirebaseAuthException catch (e) {
@@ -190,9 +216,11 @@ class _LoginScreenState extends State<LoginScreen> {
         _errorMessage = e.message;
       });
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -438,23 +466,19 @@ class _LoginScreenState extends State<LoginScreen> {
                                 onPressed: _isLoading ? null : _signInWithGoogle,
                               ),
                             ),
-                            const SizedBox(height: 10),
-                            // Facebook Sign In Button
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30.0),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                                  backgroundColor: Colors.white,
+                            if (!kIsWeb && Platform.isIOS) ...[
+                              const SizedBox(height: 10),
+                              // Sign in with Apple Button (required alongside other social logins per App Store Guideline 4.8)
+                              SizedBox(
+                                width: double.infinity,
+                                height: 50,
+                                child: SignInWithAppleButton(
+                                  onPressed: _isLoading ? () {} : _signInWithApple,
+                                  style: SignInWithAppleButtonStyle.black,
+                                  borderRadius: BorderRadius.circular(30.0),
                                 ),
-                                icon: const Icon(FontAwesomeIcons.facebook, color: Colors.blue),
-                                label: const Text("Continue with Facebook", style: TextStyle(color: Colors.black)),
-                                onPressed: _isLoading ? null : _signInWithFacebook,
                               ),
-                            ),
+                            ],
                             const SizedBox(height: 20),
                             // Toggle sign in/up
                             Row(

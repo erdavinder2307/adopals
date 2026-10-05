@@ -16,20 +16,20 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
     _OnboardingPageData(
       image: 'assets/images/logo-v10.png',
       title: 'Welcome to AdoPals!',
-      description: 'Find your furry, feathery, or scaly friend. Discover, adopt, and connect with loving pets and responsible sellers. Your new family member is just a tap away!',
+      description: 'Find your furry, feathery, or scaly friend. Discover, adopt, and connect with loving pets and responsible Pet Givers. Your new family member is just a tap away!',
       iconBg: Colors.purple,
     ),
     _OnboardingPageData(
-      image: 'assets/images/profile.jpg',
-      title: 'Adopt or Buy',
-      description: 'Browse a wide variety of pets for adoption or sale. Save your favorites and revisit them anytime.',
-      iconBg: Colors.orange,
+      image: 'assets/images/get-started-2.png',
+      title: 'Adopt a Pet',
+      description: 'Browse a wide variety of pets available for adoption. Save your favorites and revisit them anytime.',
+      iconBg: null,
     ),
     _OnboardingPageData(
-      image: 'assets/images/login-gradient1.png',
+      image: 'assets/images/get-started-3.png',
       title: 'Connect & Chat',
-      description: 'Chat with sellers, ask questions, and make informed decisions. Your perfect companion is waiting!',
-      iconBg: Colors.green,
+      description: 'Chat with Pet Givers, ask questions, and make informed decisions. Your perfect companion is waiting!',
+      iconBg: null,
     ),
   ];
 
@@ -78,14 +78,16 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Spacer(),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: page.iconBg,
-                            shape: BoxShape.circle,
-                          ),
-                          padding: const EdgeInsets.all(24),
-                          child: Image.asset(page.image, height: 80),
-                        ),
+                        page.iconBg != null
+                            ? Container(
+                                decoration: BoxDecoration(
+                                  color: page.iconBg,
+                                  shape: BoxShape.circle,
+                                ),
+                                padding: const EdgeInsets.all(24),
+                                child: Image.asset(page.image, height: 80),
+                              )
+                            : Image.asset(page.image, height: 240, fit: BoxFit.contain),
                         const SizedBox(height: 24),
                         Text(
                           page.title,
@@ -165,6 +167,8 @@ class _OnboardingPageData {
   final String image;
   final String title;
   final String description;
-  final Color iconBg;
+  // Null means the image already has its own framing (e.g. a photo asset) and should
+  // be shown at full size instead of being shrunk into a small colored icon circle.
+  final Color? iconBg;
   const _OnboardingPageData({required this.image, required this.title, required this.description, required this.iconBg});
 }

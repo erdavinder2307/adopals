@@ -85,20 +85,6 @@ class _CommonAppBarState extends State<CommonAppBar> {
         ),
       ),
       actions: [
-        // if (widget.currentUserRole == 'seller')
-        //   Row(children: [
-        //     const Icon(Icons.storefront),
-        //     const SizedBox(width: 4),
-        //     const Text('Seller'),
-        //     const SizedBox(width: 16),
-        //   ]),
-        // if (widget.currentUserRole == 'buyer')
-        //   Row(children: [
-        //     const Icon(Icons.shopping_cart),
-        //     const SizedBox(width: 4),
-        //     const Text('Buyer'),
-        //     const SizedBox(width: 16),
-        //   ]),
         if (widget.notificationCount != null && widget.currentUserRole != 'admin')
           Stack(
             children: [
@@ -185,13 +171,13 @@ class _CommonAppBarState extends State<CommonAppBar> {
           },
           itemBuilder: (context) => [
             const PopupMenuItem<String>(value: 'profile', child: Text('Profile')),
-            const PopupMenuItem<String>(value: 'orders', child: Text('My Orders')),
+            const PopupMenuItem<String>(value: 'orders', child: Text('My Adoptions')),
             if (widget.currentUserRole == 'buyer' && !widget.isSeller)
-              const PopupMenuItem<String>(value: 'registerSeller', child: Text('Register as seller')),
+              const PopupMenuItem<String>(value: 'registerSeller', child: Text('Register as Pet Giver')),
             if (widget.currentUserRole == 'buyer' && widget.isSeller)
-              const PopupMenuItem<String>(value: 'switchRole', child: Text('Switch to seller')),
+              const PopupMenuItem<String>(value: 'switchRole', child: Text('Switch to Pet Giver')),
             if (widget.currentUserRole == 'seller')
-              const PopupMenuItem<String>(value: 'switchRole', child: Text('Switch to buyer')),
+              const PopupMenuItem<String>(value: 'switchRole', child: Text('Switch to Pet Parent')),
             const PopupMenuItem<String>(value: 'logout', child: Text('Logout')),
           ],
         ),

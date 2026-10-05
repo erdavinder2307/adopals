@@ -1,8 +1,16 @@
+import 'dart:convert';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:crypto/crypto.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-import 'buyer_dashboard_screen.dart';
+import 'home_screen.dart';
 import '../../theme_service.dart';
 import '../../theme_service_provider.dart';
 
@@ -108,6 +116,131 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
     }
   }
 
+  String _generateNonce([int length = 32]) {
+    const charset = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-._';
+    final random = Random.secure();
+    return List.generate(length, (_) => charset[random.nextInt(charset.length)]).join();
+  }
+
+  String _sha256ofString(String input) => sha256.convert(utf8.encode(input)).toString();
+
+  Future<String?> _promptPassword() {
+    final controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm your password'),
+        content: TextField(
+          controller: controller,
+          obscureText: true,
+          decoration: const InputDecoration(labelText: 'Password'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, controller.text),
+            child: const Text('Confirm'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<AuthCredential?> _getReauthCredential(User user) async {
+    final providerId = user.providerData.isNotEmpty ? user.providerData.first.providerId : 'password';
+    switch (providerId) {
+      case 'google.com':
+        final googleUser = await GoogleSignIn().signIn();
+        if (googleUser == null) return null;
+        final googleAuth = await googleUser.authentication;
+        return GoogleAuthProvider.credential(accessToken: googleAuth.accessToken, idToken: googleAuth.idToken);
+      case 'apple.com':
+        final rawNonce = _generateNonce();
+        final nonce = _sha256ofString(rawNonce);
+        final appleCredential = await SignInWithApple.getAppleIDCredential(
+          scopes: [AppleIDAuthorizationScopes.email, AppleIDAuthorizationScopes.fullName],
+          nonce: nonce,
+        );
+        return OAuthProvider('apple.com').credential(
+          idToken: appleCredential.identityToken,
+          rawNonce: rawNonce,
+        );
+      case 'password':
+      default:
+        if (user.email == null) return null;
+        final password = await _promptPassword();
+        if (password == null || password.isEmpty) return null;
+        return EmailAuthProvider.credential(email: user.email!, password: password);
+    }
+  }
+
+  Future<void> _deleteUserData(String uid) async {
+    final firestore = FirebaseFirestore.instance;
+
+    final favorites = await firestore.collection('favorites').where('userId', isEqualTo: uid).get();
+    final batch = firestore.batch();
+    for (final doc in favorites.docs) {
+      batch.delete(doc.reference);
+    }
+    batch.delete(firestore.collection('carts').doc(uid));
+    batch.delete(firestore.collection('users').doc(uid));
+    await batch.commit();
+
+    for (final imageUrl in [_profileImage, _coverImage]) {
+      if (imageUrl == null || imageUrl.isEmpty) continue;
+      try {
+        await FirebaseStorage.instance.refFromURL(imageUrl).delete();
+      } catch (_) {
+        // Image may not be Storage-hosted or may already be gone; safe to ignore.
+      }
+    }
+  }
+
+  Future<void> _confirmAndDeleteAccount() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete account'),
+        content: const Text(
+          'This permanently deletes your account, profile, favorites, and selected pets. This cannot be undone. Continue?',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      final credential = await _getReauthCredential(user);
+      if (credential == null) return; // user cancelled reauth
+      await user.reauthenticateWithCredential(credential);
+
+      await _deleteUserData(user.uid);
+      await user.delete();
+      await const FlutterSecureStorage().delete(key: 'email');
+      await const FlutterSecureStorage().delete(key: 'password');
+
+      if (!mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        (route) => false,
+      );
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message ?? 'Could not delete account. Please try again.')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -174,9 +307,9 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
                 foregroundColor: Theme.of(context).colorScheme.onPrimary,
               ),
               onPressed: () {
-                // TODO: Navigate to orders
+                // TODO: Navigate to adoptions
               },
-              child: const Text('My Orders'),
+              child: const Text('My Adoptions'),
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
@@ -421,6 +554,28 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
                                   ),
                           ],
                         ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Danger Zone: account deletion (required for App Store Guideline 5.1.1(v))
+                  Card(
+                    color: Theme.of(context).colorScheme.surface,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Danger Zone', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.red)),
+                          const SizedBox(height: 8),
+                          const Text('Deleting your account removes your profile, favorites, and selected pets permanently.'),
+                          const SizedBox(height: 8),
+                          OutlinedButton(
+                            style: OutlinedButton.styleFrom(foregroundColor: Colors.red, side: const BorderSide(color: Colors.red)),
+                            onPressed: _confirmAndDeleteAccount,
+                            child: const Text('Delete Account'),
+                          ),
+                        ],
                       ),
                     ),
                   ),

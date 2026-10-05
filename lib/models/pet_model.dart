@@ -1,3 +1,36 @@
+class AdoptionFeeBreakdown {
+  final double careRecoveryFee;
+  final double? vaccinationFee;
+  final double? microchipFee;
+  final double? otherFee;
+  final double? platformFee;
+  final double totalFee;
+  final bool isFree;
+
+  AdoptionFeeBreakdown({
+    required this.careRecoveryFee,
+    this.vaccinationFee,
+    this.microchipFee,
+    this.otherFee,
+    this.platformFee,
+    required this.totalFee,
+    required this.isFree,
+  });
+
+  factory AdoptionFeeBreakdown.fromMap(Map<String, dynamic> data) {
+    double? toDouble(dynamic v) => v == null ? null : (v is num ? v.toDouble() : double.tryParse(v.toString()));
+    return AdoptionFeeBreakdown(
+      careRecoveryFee: toDouble(data['careRecoveryFee']) ?? 0,
+      vaccinationFee: toDouble(data['vaccinationFee']),
+      microchipFee: toDouble(data['microchipFee']),
+      otherFee: toDouble(data['otherFee']),
+      platformFee: toDouble(data['platformFee']),
+      totalFee: toDouble(data['totalFee']) ?? 0,
+      isFree: data['isFree'] == true,
+    );
+  }
+}
+
 class PetModel {
   final String? estimateDeliveryTime;
   final String? customDeliveryTime;
@@ -25,6 +58,17 @@ class PetModel {
   final String availabilityStatus;
   final String? createdBy;
   final bool? isVerified;
+  final String? color;
+  final String? size;
+  final double? weightValue;
+  final String? weightUnit;
+  final String? temperament;
+  final String? medicalHistory;
+  final bool? microchipped;
+  final bool? goodWithKids;
+  final bool? goodWithOtherPets;
+  final bool? spayedNeutered;
+  final AdoptionFeeBreakdown? adoptionFee;
 
   PetModel({
     this.estimateDeliveryTime,
@@ -53,6 +97,17 @@ class PetModel {
     required this.availabilityStatus,
     this.createdBy,
     this.isVerified,
+    this.color,
+    this.size,
+    this.weightValue,
+    this.weightUnit,
+    this.temperament,
+    this.medicalHistory,
+    this.microchipped,
+    this.goodWithKids,
+    this.goodWithOtherPets,
+    this.spayedNeutered,
+    this.adoptionFee,
   });
 
   factory PetModel.fromMap(Map<String, dynamic> data, String id, {List<String>? favoritePetIds}) {
@@ -114,6 +169,17 @@ class PetModel {
       availabilityStatus: data['availabilityStatus'] ?? '',
       createdBy: data['createdBy'],
       isVerified: data['isVerified'],
+      color: data['color'],
+      size: data['size'],
+      weightValue: data['weightValue'] is num ? (data['weightValue'] as num).toDouble() : double.tryParse(data['weightValue']?.toString() ?? ''),
+      weightUnit: data['weightUnit'],
+      temperament: data['temperament'],
+      medicalHistory: data['medicalHistory'],
+      microchipped: data['microchipped'] is bool ? data['microchipped'] : null,
+      goodWithKids: data['goodWithKids'] is bool ? data['goodWithKids'] : null,
+      goodWithOtherPets: data['goodWithOtherPets'] is bool ? data['goodWithOtherPets'] : null,
+      spayedNeutered: data['spayedNeutered'] is bool ? data['spayedNeutered'] : null,
+      adoptionFee: data['adoptionFee'] is Map ? AdoptionFeeBreakdown.fromMap(Map<String, dynamic>.from(data['adoptionFee'])) : null,
     );
   }
 
@@ -145,6 +211,16 @@ class PetModel {
       'availabilityStatus': availabilityStatus,
       'createdBy': createdBy,
       'isVerified': isVerified,
+      'color': color,
+      'size': size,
+      'weightValue': weightValue,
+      'weightUnit': weightUnit,
+      'temperament': temperament,
+      'medicalHistory': medicalHistory,
+      'microchipped': microchipped,
+      'goodWithKids': goodWithKids,
+      'goodWithOtherPets': goodWithOtherPets,
+      'spayedNeutered': spayedNeutered,
     };
   }
 

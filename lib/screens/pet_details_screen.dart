@@ -15,7 +15,6 @@ class PetDetailsScreen extends StatefulWidget {
 }
 
 class _PetDetailsScreenState extends State<PetDetailsScreen> {
-  int _quantity = 1;
   bool _isInCart = false;
   bool _isFavorite = false;
   bool _isZoomModalOpen = false;
@@ -43,7 +42,7 @@ class _PetDetailsScreenState extends State<PetDetailsScreen> {
         if (sellerId != null) {
           _sellerId = sellerId;
           final userDoc = await FirebaseFirestore.instance.collection('users').doc(sellerId).get();
-          _sellerName = userDoc.data()?['name'] ?? 'Seller';
+          _sellerName = userDoc.data()?['name'] ?? 'Pet Giver';
           // TODO: Fetch seller rating if available
         }
       }
@@ -51,20 +50,6 @@ class _PetDetailsScreenState extends State<PetDetailsScreen> {
       // ignore
     }
     setState(() => _loadingSeller = false);
-  }
-
-  void _increaseQuantity() {
-    setState(() {
-      _quantity++;
-    });
-  }
-
-  void _decreaseQuantity() {
-    if (_quantity > 1) {
-      setState(() {
-        _quantity--;
-      });
-    }
   }
 
   void _openZoomModal(String photo) {
@@ -90,13 +75,11 @@ class _PetDetailsScreenState extends State<PetDetailsScreen> {
     List<dynamic> items = cartDoc.data()?['items'] ?? [];
     final petId = widget.pet.id;
     final existingIndex = items.indexWhere((item) => item['id'] == petId);
-    if (existingIndex != -1) {
-      // Already in cart, increase quantity
-      items[existingIndex]['quantity'] = (items[existingIndex]['quantity'] ?? 1) + _quantity;
-    } else {
+    if (existingIndex == -1) {
+      // One pet per adoption request — matches web app's adoption model
       final petMap = {
         ...widget.pet.toMap(),
-        'quantity': _quantity,
+        'quantity': 1,
       };
       items.add(petMap);
     }
@@ -105,11 +88,11 @@ class _PetDetailsScreenState extends State<PetDetailsScreen> {
       _isInCart = true;
     });
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Pet added to cart')),
+      SnackBar(content: Text('Pet added')),
     );
   }
 
-  Future<void> _addToWishlist() async {
+  Future<void> _addToFavorites() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
     final userId = user.uid;
@@ -121,13 +104,63 @@ class _PetDetailsScreenState extends State<PetDetailsScreen> {
         _isFavorite = true;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Pet added to wishlist')),
+        SnackBar(content: Text('Pet added to favorites')),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Pet is already in the wishlist')),
+        SnackBar(content: Text('Pet is already in your favorites')),
       );
     }
+  }
+
+  Widget _buildAdoptionFeeSection(PetModel pet) {
+    final fee = pet.adoptionFee;
+    final secondaryColor = Theme.of(context).colorScheme.secondary;
+    final primaryColor = Theme.of(context).colorScheme.primary;
+
+    if (fee == null) {
+      return Row(
+        children: [
+          if (pet.saleOrAdoptionStatus != null && pet.saleOrAdoptionStatus!.isNotEmpty) ...[
+            Text(pet.saleOrAdoptionStatus!, style: TextStyle(fontWeight: FontWeight.bold, color: secondaryColor)),
+            const SizedBox(width: 10),
+          ],
+          Text(
+            pet.price > 0 ? '₹${pet.price.toStringAsFixed(0)}' : 'Free',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: primaryColor),
+          ),
+        ],
+      );
+    }
+
+    final statusLabel = pet.saleOrAdoptionStatus == 'Sale' ? 'Adoption (with Fees)' : 'Adoption';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(statusLabel, style: TextStyle(fontWeight: FontWeight.bold, color: secondaryColor)),
+            const SizedBox(width: 10),
+            Text(
+              fee.isFree ? 'Free' : '₹${fee.totalFee.toStringAsFixed(0)}',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: primaryColor),
+            ),
+          ],
+        ),
+        if (!fee.isFree) ...[
+          const SizedBox(height: 8),
+          Text('Adoption Fee Breakdown', style: TextStyle(fontWeight: FontWeight.bold, color: primaryColor)),
+          const SizedBox(height: 4),
+          if (fee.careRecoveryFee > 0) Text('Care & Recovery Fee: ₹${fee.careRecoveryFee.toStringAsFixed(0)}'),
+          if ((fee.vaccinationFee ?? 0) > 0) Text('Vaccination Fee: ₹${fee.vaccinationFee!.toStringAsFixed(0)}'),
+          if ((fee.microchipFee ?? 0) > 0) Text('Microchip Fee: ₹${fee.microchipFee!.toStringAsFixed(0)}'),
+          if ((fee.otherFee ?? 0) > 0) Text('Other Fee: ₹${fee.otherFee!.toStringAsFixed(0)}'),
+          if ((fee.platformFee ?? 0) > 0) Text('Platform Fee: ₹${fee.platformFee!.toStringAsFixed(0)}'),
+          const SizedBox(height: 4),
+          Text('Total Fee: ₹${fee.totalFee.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold)),
+        ],
+      ],
+    );
   }
 
   @override
@@ -206,18 +239,16 @@ class _PetDetailsScreenState extends State<PetDetailsScreen> {
                   if (_loadingSeller)
                     const CircularProgressIndicator(strokeWidth: 2)
                   else if (_sellerName != null)
-                    Text('Seller: $_sellerName', style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary)),
+                    Text('Pet Giver: $_sellerName', style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary)),
                 ],
               ),
               const SizedBox(height: 8),
+              _buildAdoptionFeeSection(pet),
+              const SizedBox(height: 8),
               Row(
                 children: [
-                  if (pet.price != null)
-                    Text('₹${pet.price!.toStringAsFixed(0)}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary)),
-                  if (pet.category != null) ...[
-                    const SizedBox(width: 16),
+                  if (pet.category != null)
                     Text('Category: ${pet.category!}', style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
-                  ],
                   if (pet.gender != null) ...[
                     const SizedBox(width: 16),
                     Text('Gender: ${pet.gender!}', style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
@@ -227,18 +258,9 @@ class _PetDetailsScreenState extends State<PetDetailsScreen> {
               const SizedBox(height: 16),
               Row(
                 children: [
-                  const Text('Quantity:'),
-                  IconButton(
-                    icon: const Icon(Icons.remove),
-                    color: Theme.of(context).colorScheme.primary,
-                    onPressed: _decreaseQuantity,
-                  ),
-                  Text('$_quantity'),
-                  IconButton(
-                    icon: const Icon(Icons.add),
-                    color: Theme.of(context).colorScheme.primary,
-                    onPressed: _increaseQuantity,
-                  ),
+                  Icon(Icons.info_outline, size: 18, color: Theme.of(context).colorScheme.secondary),
+                  const SizedBox(width: 8),
+                  Text('One pet per adoption request', style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
                 ],
               ),
               const SizedBox(height: 16),
@@ -259,7 +281,7 @@ class _PetDetailsScreenState extends State<PetDetailsScreen> {
                       side: BorderSide(color: Theme.of(context).colorScheme.primary),
                       backgroundColor: Theme.of(context).colorScheme.surface,
                     ),
-                    onPressed: _addToWishlist,
+                    onPressed: _addToFavorites,
                     child: Text(_isFavorite ? 'Saved' : 'Save for Home'),
                   ),
                 ],
@@ -275,10 +297,23 @@ class _PetDetailsScreenState extends State<PetDetailsScreen> {
                   if (pet.category != null) Text('Category: ${pet.category}', style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
                   if (pet.breed != null) Text('Breed: ${pet.breed}', style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
                   if (pet.gender != null) Text('Gender: ${pet.gender}', style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
+                  if (pet.color != null) Text('Color: ${pet.color}', style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
+                  if (pet.size != null) Text('Size: ${pet.size}', style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
+                  if (pet.weightValue != null && pet.weightUnit != null)
+                    Text('Weight: ${pet.weightValue} ${pet.weightUnit}', style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
+                  if (pet.temperament != null) Text('Temperament: ${pet.temperament}', style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
+                  if (pet.vaccinationStatus != null) Text('Vaccination: ${pet.vaccinationStatus}', style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
+                  if (pet.medicalHistory != null) Text('Medical History: ${pet.medicalHistory}', style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
+                  if (pet.microchipped != null) Text('Microchipped: ${pet.microchipped! ? 'Yes' : 'No'}', style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
+                  if (pet.goodWithKids != null) Text('Good With Kids: ${pet.goodWithKids! ? 'Yes' : 'No'}', style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
+                  if (pet.goodWithOtherPets != null) Text('Good With Other Pets: ${pet.goodWithOtherPets! ? 'Yes' : 'No'}', style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
+                  if (pet.spayedNeutered != null) Text('Spayed/Neutered: ${pet.spayedNeutered! ? 'Yes' : 'No'}', style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
                   if (pet.description != null) Text('Description: ${pet.description}', style: Theme.of(context).textTheme.bodyMedium),
                 ],
               ),
-              // TODO: Delivery options, pin code check, etc.
+              // Note: Pet Relocation (pin-code estimate/service areas) and Breed Wikipedia info
+              // exist on the web app's pet details page but require new service integrations
+              // not yet built in this app — out of scope for this pass.
               if (_isZoomModalOpen && _zoomPhoto != null)
                 Builder(
                   builder: (context) {

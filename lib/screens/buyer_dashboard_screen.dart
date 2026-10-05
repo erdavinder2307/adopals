@@ -24,7 +24,7 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
   List<PetModel> _allPets = [];
   List<PetModel> _favoritePets = [];
   List<PetModel> _recentlyViewedPets = [];
-  String _userName = 'Buyer';
+  String _userName = 'Pet Parent';
   String? _userId; // TODO: Set this from auth
   List<String> _favoritePetIds = [];
   late ThemeService _themeService;
@@ -47,7 +47,7 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       _userId = user.uid;
-      _userName = user.displayName ?? user.email?.split('@').first ?? 'Buyer';
+      _userName = user.displayName ?? user.email?.split('@').first ?? 'Pet Parent';
     } else {
       // If not logged in, redirect to login screen
       WidgetsBinding.instance.addPostFrameCallback((_) {
