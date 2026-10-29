@@ -11,6 +11,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:crypto/crypto.dart';
 
+import '../../legal_links.dart';
 import '../buyer_dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -414,6 +415,25 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                             ],
+                            const SizedBox(height: 4),
+                            Wrap(
+                              alignment: WrapAlignment.center,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: [
+                                const Text('By continuing you agree to our '),
+                                InkWell(
+                                  onTap: () => openLegalLink(context, termsUrl),
+                                  child: const Text('Terms',
+                                      style: TextStyle(color: Colors.purple, decoration: TextDecoration.underline)),
+                                ),
+                                const Text(' and '),
+                                InkWell(
+                                  onTap: () => openLegalLink(context, privacyPolicyUrl),
+                                  child: const Text('Privacy Policy',
+                                      style: TextStyle(color: Colors.purple, decoration: TextDecoration.underline)),
+                                ),
+                              ],
+                            ),
                             const SizedBox(height: 10),
                             // Sign In/Up Button
                             SizedBox(
@@ -461,7 +481,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                                   backgroundColor: Colors.white,
                                 ),
-                                icon: const Icon(FontAwesomeIcons.google, color: Colors.red),
+                                icon: const FaIcon(FontAwesomeIcons.google, color: Colors.red),
                                 label: const Text("Continue with Google", style: TextStyle(color: Colors.black)),
                                 onPressed: _isLoading ? null : _signInWithGoogle,
                               ),
