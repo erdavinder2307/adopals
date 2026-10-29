@@ -93,12 +93,12 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
   void _saveAboutInfo() async {
     if (_aboutFormKey.currentState?.validate() ?? false) {
       _aboutFormKey.currentState?.save();
-      await FirebaseFirestore.instance.collection('users').doc(_userId).update({
+      await FirebaseFirestore.instance.collection('users').doc(_userId).set({
         'name': _userName,
         'email': _userEmail,
         'phone': _userPhone,
         'address': _userAddress,
-      });
+      }, SetOptions(merge: true));
       setState(() => _aboutEditMode = false);
     }
   }
@@ -106,12 +106,12 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
   void _savePrefInfo() async {
     if (_prefFormKey.currentState?.validate() ?? false) {
       _prefFormKey.currentState?.save();
-      await FirebaseFirestore.instance.collection('users').doc(_userId).update({
+      await FirebaseFirestore.instance.collection('users').doc(_userId).set({
         'categoriesPref': _categoriesPref.map((e) => {'name': e}).toList(),
         'breedsPref': _breedsPref.map((e) => {'name': e}).toList(),
         'gendersPref': _gendersPref,
         'ageRange': {'minAge': _minAge, 'maxAge': _maxAge},
-      });
+      }, SetOptions(merge: true));
       setState(() => _prefEditMode = false);
     }
   }

@@ -23,7 +23,7 @@ class ThemeService extends ChangeNotifier {
     notifyListeners();
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      await FirebaseFirestore.instance.collection('users').doc(user.uid).update({'theme': _activeTheme});
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({'theme': _activeTheme}, SetOptions(merge: true));
     }
   }
 

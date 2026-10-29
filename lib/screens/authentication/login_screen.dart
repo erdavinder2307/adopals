@@ -12,6 +12,7 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:crypto/crypto.dart';
 
 import '../buyer_dashboard_screen.dart';
+import '../../user_doc_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -96,10 +97,11 @@ class _LoginScreenState extends State<LoginScreen> {
       _errorMessage = null;
     });
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      final result = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+      if (result.user != null) await ensureUserDoc(result.user!);
       await _handleRememberMe();
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const BuyerDashboardScreen()));
     } on FirebaseAuthException catch (e) {
@@ -126,10 +128,11 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      final result = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+      if (result.user != null) await ensureUserDoc(result.user!);
       await _handleRememberMe();
       // Navigate to home or main screen
     } on FirebaseAuthException catch (e) {
@@ -161,7 +164,8 @@ class _LoginScreenState extends State<LoginScreen> {
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
-      await FirebaseAuth.instance.signInWithCredential(credential);
+      final result = await FirebaseAuth.instance.signInWithCredential(credential);
+      if (result.user != null) await ensureUserDoc(result.user!);
       if (mounted) {
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const BuyerDashboardScreen()));
       }
@@ -201,7 +205,14 @@ class _LoginScreenState extends State<LoginScreen> {
         rawNonce: rawNonce,
         accessToken: appleCredential.authorizationCode,
       );
-      await FirebaseAuth.instance.signInWithCredential(oauthCredential);
+      final result = await FirebaseAuth.instance.signInWithCredential(oauthCredential);
+      // Apple shares the full name only on the first sign-in.
+      final appleName = [appleCredential.givenName, appleCredential.familyName]
+          .where((part) => part != null && part.isNotEmpty)
+          .join(' ');
+      if (result.user != null) {
+        await ensureUserDoc(result.user!, name: appleName.isEmpty ? null : appleName);
+      }
       if (mounted) {
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const BuyerDashboardScreen()));
       }
