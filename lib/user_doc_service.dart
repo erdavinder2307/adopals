@@ -4,23 +4,28 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 /// Returns the basic profile fields that are missing (absent or null) in
 /// [existing]. Fields already present are never included, so an existing
-/// user's data is not overwritten.
+/// user's data is not overwritten. Mirrors the web app's createUser: every
+/// account starts as a buyer, which the Firestore rules need to place orders.
 Map<String, dynamic> missingUserFields(
   Map<String, dynamic>? existing, {
   required String uid,
   String? email,
   String? name,
 }) {
-  final candidates = <String, String?>{
+  final candidates = <String, dynamic>{
     'uid': uid,
+    'id': uid,
+    'userId': uid,
     'email': email,
     'name': name,
+    'username': name,
+    'roles': ['buyer'],
+    'role': 'buyer',
   };
   final missing = <String, dynamic>{};
   candidates.forEach((key, value) {
-    if (value != null && value.isNotEmpty && existing?[key] == null) {
-      missing[key] = value;
-    }
+    final empty = value == null || (value is String && value.isEmpty);
+    if (!empty && existing?[key] == null) missing[key] = value;
   });
   return missing;
 }
@@ -30,7 +35,7 @@ Map<String, dynamic> missingUserFields(
 Future<void> ensureUserDoc(User user, {String? name}) async {
   try {
     final ref = FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final snapshot = await ref.get();
+    final snapshot = await ref.get().timeout(const Duration(seconds: 5));
     final fields = missingUserFields(
       snapshot.data(),
       uid: user.uid,
@@ -41,7 +46,9 @@ Future<void> ensureUserDoc(User user, {String? name}) async {
       fields['createdAt'] = FieldValue.serverTimestamp();
     }
     if (fields.isEmpty) return;
-    await ref.set(fields, SetOptions(merge: true));
+    await ref
+        .set(fields, SetOptions(merge: true))
+        .timeout(const Duration(seconds: 5));
   } catch (e) {
     // Do not block sign-in if the profile doc cannot be written.
     debugPrint('ensureUserDoc failed: $e');

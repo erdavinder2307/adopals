@@ -57,6 +57,8 @@ class _LoginScreenState extends State<LoginScreen> {
   void _redirectIfLoggedIn() {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
+      // Backfill older accounts on a restored session; never waits.
+      ensureUserDoc(user);
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.pushReplacement(
           context,
