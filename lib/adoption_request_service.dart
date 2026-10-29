@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 import 'models/pet_model.dart';
 
@@ -174,7 +175,11 @@ class AdoptionRequestService {
     return hasOpenRequestForPet(snap.docs.map((d) => d.data()), petId);
   }
 
-  /// Writes the order document and its request detail in one batch. Returns the order document id.
+  /// Writes the order document, then its request detail. Returns the order document id.
+  ///
+  /// Not a batch: the Firestore rules check the parent order with get(), which in a batch still sees
+  /// the order as missing. Like the website, a failed detail write still counts as sent, because the
+  /// giver finds the order through sellerIds.
   Future<String> submitRequest({
     required PetModel pet,
     required String giverId,
@@ -187,9 +192,7 @@ class AdoptionRequestService {
     final orderRef = _db.collection(adoptionOrdersCollection).doc();
     final requestRef = orderRef.collection(adoptionRequestsSubcollection).doc();
     final now = FieldValue.serverTimestamp();
-    final batch = _db.batch();
-    batch.set(
-      orderRef,
+    await orderRef.set(
       buildAdoptionOrderPayload(
         pet: pet,
         giverId: giverId,
@@ -202,21 +205,23 @@ class AdoptionRequestService {
         createdAt: now,
       ),
     );
-    batch.set(
-      requestRef,
-      buildAdoptionRequestDetail(
-        pet: pet,
-        giverId: giverId,
-        giverName: giverName,
-        applicantId: applicantId,
-        applicantName: applicantName,
-        applicantEmail: applicantEmail,
-        message: message,
-        parentDocId: orderRef.id,
-        timestamp: now,
-      ),
-    );
-    await batch.commit();
+    try {
+      await requestRef.set(
+        buildAdoptionRequestDetail(
+          pet: pet,
+          giverId: giverId,
+          giverName: giverName,
+          applicantId: applicantId,
+          applicantName: applicantName,
+          applicantEmail: applicantEmail,
+          message: message,
+          parentDocId: orderRef.id,
+          timestamp: now,
+        ),
+      );
+    } catch (e) {
+      debugPrint('Adoption request detail not written: $e');
+    }
     return orderRef.id;
   }
 }

@@ -470,7 +470,7 @@ class _AdoptionRequestSheetState extends State<_AdoptionRequestSheet> {
             const SizedBox(height: 8),
             const Text(
               'Send a short message to the pet giver. They will contact you about the next steps. '
-              'No payment is taken in the app.',
+              'No payment is taken in the app. Your name and email are shared with the giver so they can contact you.',
             ),
             const SizedBox(height: 12),
             TextField(
