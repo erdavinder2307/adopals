@@ -7,6 +7,7 @@ import 'common_app_bar.dart';
 import '../../theme_service.dart';
 import '../../theme_service_provider.dart';
 import '../models/pet_model.dart';
+import '../auth_guard.dart';
 
 class BuyerDashboardScreen extends StatefulWidget {
   const BuyerDashboardScreen({super.key});
@@ -48,13 +49,8 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
     if (user != null) {
       _userId = user.uid;
       _userName = user.displayName ?? user.email?.split('@').first ?? 'Pet Parent';
-    } else {
-      // If not logged in, redirect to login screen
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.of(context).pushReplacementNamed('/login');
-      });
-      return;
     }
+    // Signed-out visitors browse as guests (App Review 5.1.1): no redirect to login.
     _initializeDashboard();
   }
 
@@ -69,6 +65,18 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
   Future<void> _fetchPets() async {
     setState(() => _isLoading = true);
     try {
+      if (_userId == null) {
+        // Firestore rules allow /pets reads only when signed in; guests read the
+        // public projection (publicPets: featured pets, safe fields only).
+        final publicSnapshot = await FirebaseFirestore.instance.collection('publicPets').orderBy('createdAt', descending: true).get();
+        final publicPets = publicSnapshot.docs.map((doc) => PetModel.fromPublicPet(doc.data(), doc.id)).toList();
+        setState(() {
+          _allPets = publicPets;
+          _applyTabFilter();
+          _isLoading = false;
+        });
+        return;
+      }
       final petsSnapshot = await FirebaseFirestore.instance.collection('pets').orderBy('createdAt', descending: true).get();
       final pets = petsSnapshot.docs.map((doc) {
         final data = doc.data();
@@ -122,6 +130,9 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
   }
 
   void _onTabChanged(int index) {
+    if (index == 2 && _userId == null) {
+      showSignInPrompt(context, message: 'Sign in to save and see your favorite pets.');
+    }
     setState(() {
       _selectedTabIndex = index;
       _applyTabFilter();

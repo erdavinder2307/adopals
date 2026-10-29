@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:adopals/screens/buyer_profile_screen.dart'; // Import the BuyerProfileScreen
+import 'package:adopals/auth_guard.dart';
 
 class CommonAppBar extends StatefulWidget implements PreferredSizeWidget {
   final String? currentUserRole;
@@ -147,6 +148,9 @@ class _CommonAppBarState extends State<CommonAppBar> {
           icon: Icon(Icons.more_vert),
           onSelected: (value) {
             switch (value) {
+              case 'signin':
+                Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+                break;
               case 'profile':
                 Navigator.push(
                   context,
@@ -169,7 +173,10 @@ class _CommonAppBarState extends State<CommonAppBar> {
                 break;
             }
           },
-          itemBuilder: (context) => [
+          // Guests (signed out) get only "Sign in"; every other item needs an account.
+          itemBuilder: (context) => FirebaseAuth.instance.currentUser == null
+              ? const [PopupMenuItem<String>(value: 'signin', child: Text('Sign in'))]
+              : [
             const PopupMenuItem<String>(value: 'profile', child: Text('Profile')),
             const PopupMenuItem<String>(value: 'orders', child: Text('My Adoptions')),
             if (widget.currentUserRole == 'buyer' && !widget.isSeller)
@@ -186,7 +193,9 @@ class _CommonAppBarState extends State<CommonAppBar> {
             children: [
               IconButton(
                 icon: const Icon(Icons.shopping_cart),
-                onPressed: widget.onCartTap,
+                onPressed: () {
+                  if (requireSignIn(context, message: 'Sign in to see your pack.')) widget.onCartTap?.call();
+                },
               ),
               if ((widget.cartCount ?? 0) > 0)
                 Positioned(

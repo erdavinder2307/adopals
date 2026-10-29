@@ -507,6 +507,17 @@ class _LoginScreenState extends State<LoginScreen> {
                                   child: const Text('Forgot Password?'),
                                 ),
                               ),
+                            // Browsing pets does not need an account (App Review 5.1.1)
+                            TextButton.icon(
+                              onPressed: _isLoading
+                                  ? null
+                                  : () => Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(builder: (context) => const BuyerDashboardScreen()),
+                                      ),
+                              icon: const Icon(Icons.pets, color: Colors.purple),
+                              label: const Text('Browse pets as guest', style: TextStyle(color: Colors.purple)),
+                            ),
                           ],
                         ),
                       ),
