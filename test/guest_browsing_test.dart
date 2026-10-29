@@ -27,6 +27,39 @@ void main() {
     expect(find.text('Save for Home'), findsNothing);
   });
 
+  testWidgets('sign-in action is visible on the snackbar in light and dark themes', (tester) async {
+    final themes = [
+      ThemeData(colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.purple)),
+      ThemeData.dark().copyWith(colorScheme: const ColorScheme.dark()),
+    ];
+    for (final theme in themes) {
+      // A new key per theme, so MaterialApp does not animate from the previous theme.
+      await tester.pumpWidget(MaterialApp(
+        key: ValueKey(theme.brightness),
+        theme: theme,
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => TextButton(
+              onPressed: () => showSignInPrompt(context),
+              child: const Text('Open'),
+            ),
+          ),
+        ),
+      ));
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      final background = tester.widget<Material>(
+        find.ancestor(of: find.text('Please sign in to continue.'), matching: find.byType(Material)).first,
+      ).color!;
+      final action = tester.widget<SnackBarAction>(find.byType(SnackBarAction));
+      expect(
+        ThemeData.estimateBrightnessForColor(action.textColor!),
+        isNot(ThemeData.estimateBrightnessForColor(background)),
+      );
+    }
+  });
+
   test('publicPets document maps to a PetModel', () {
     final pet = PetModel.fromPublicPet({
       'name': 'Bruno',

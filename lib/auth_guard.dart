@@ -23,8 +23,19 @@ void showSignInPrompt(BuildContext context, {String message = 'Please sign in to
         content: Text(message),
         action: SnackBarAction(
           label: 'Sign in',
+          textColor: signInActionColor(Theme.of(context)),
           onPressed: () => navigator.pushNamedAndRemoveUntil('/login', (route) => false),
         ),
       ),
     );
+}
+
+/// The light theme's swatch-based scheme leaves the action's default colour
+/// (inversePrimary → onPrimary) black on the black snackbar, so pick a colour
+/// that contrasts with the snackbar background in either theme.
+Color signInActionColor(ThemeData theme) {
+  final background = theme.snackBarTheme.backgroundColor ?? theme.colorScheme.inverseSurface;
+  return ThemeData.estimateBrightnessForColor(background) == Brightness.dark
+      ? Colors.purple.shade100
+      : Colors.purple.shade700;
 }
