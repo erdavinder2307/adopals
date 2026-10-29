@@ -65,24 +65,22 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // "Remember me" keeps only the email. Older builds also stored the password;
+  // remove it so it does not stay in the Keychain after an update.
   Future<void> _loadRememberedCredentials() async {
+    await _secureStorage.delete(key: 'password');
     final savedEmail = await _secureStorage.read(key: 'email');
-    final savedPassword = await _secureStorage.read(key: 'password');
-    if (savedEmail != null && savedPassword != null) {
+    if (savedEmail != null && mounted) {
       setState(() {
         _emailController.text = savedEmail;
-        _passwordController.text = savedPassword;
         _rememberMe = true;
       });
-      // Optionally, auto-login:
-      // _signInWithEmail();
     }
   }
 
   Future<void> _handleRememberMe() async {
     if (_rememberMe) {
       await _secureStorage.write(key: 'email', value: _emailController.text.trim());
-      await _secureStorage.write(key: 'password', value: _passwordController.text.trim());
     } else {
       await _secureStorage.delete(key: 'email');
       await _secureStorage.delete(key: 'password');
