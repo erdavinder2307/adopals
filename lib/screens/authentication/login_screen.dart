@@ -461,7 +461,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                                   backgroundColor: Colors.white,
                                 ),
-                                icon: const Icon(FontAwesomeIcons.google, color: Colors.red),
+                                icon: const FaIcon(FontAwesomeIcons.google, color: Colors.red),
                                 label: const Text("Continue with Google", style: TextStyle(color: Colors.black)),
                                 onPressed: _isLoading ? null : _signInWithGoogle,
                               ),
