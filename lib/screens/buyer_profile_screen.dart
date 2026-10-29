@@ -301,16 +301,7 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
             const SizedBox(height: 60), // Space for avatar overlap
             Text(_userName ?? '', style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 8),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Theme.of(context).colorScheme.onPrimary,
-              ),
-              onPressed: () {
-                // TODO: Navigate to adoptions
-              },
-              child: const Text('My Adoptions'),
-            ),
+            // 'My Adoptions' button hidden until that screen exists.
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(

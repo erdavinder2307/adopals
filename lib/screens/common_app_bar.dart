@@ -85,7 +85,7 @@ class _CommonAppBarState extends State<CommonAppBar> {
         ),
       ),
       actions: [
-        if (widget.notificationCount != null && widget.currentUserRole != 'admin')
+        if (widget.notificationCount != null && widget.onNotificationTap != null && widget.currentUserRole != 'admin')
           Stack(
             children: [
               IconButton(
@@ -171,17 +171,17 @@ class _CommonAppBarState extends State<CommonAppBar> {
           },
           itemBuilder: (context) => [
             const PopupMenuItem<String>(value: 'profile', child: Text('Profile')),
-            const PopupMenuItem<String>(value: 'orders', child: Text('My Adoptions')),
-            if (widget.currentUserRole == 'buyer' && !widget.isSeller)
+            // 'My Adoptions' (orders) is hidden until that screen exists.
+            if (widget.currentUserRole == 'buyer' && !widget.isSeller && widget.onRegisterSeller != null)
               const PopupMenuItem<String>(value: 'registerSeller', child: Text('Register as Pet Giver')),
-            if (widget.currentUserRole == 'buyer' && widget.isSeller)
+            if (widget.currentUserRole == 'buyer' && widget.isSeller && widget.onSwitchRole != null)
               const PopupMenuItem<String>(value: 'switchRole', child: Text('Switch to Pet Giver')),
             if (widget.currentUserRole == 'seller')
               const PopupMenuItem<String>(value: 'switchRole', child: Text('Switch to Pet Parent')),
             const PopupMenuItem<String>(value: 'logout', child: Text('Logout')),
           ],
         ),
-        if (widget.currentUserRole == 'buyer')
+        if (widget.currentUserRole == 'buyer' && widget.onCartTap != null)
           Stack(
             children: [
               IconButton(
