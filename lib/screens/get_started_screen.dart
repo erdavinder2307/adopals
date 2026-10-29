@@ -156,6 +156,14 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
                 ],
               ),
             ),
+            // Browsing pets does not need an account (App Review 5.1.1)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: TextButton(
+                onPressed: () => Navigator.of(context).pushReplacementNamed('/dashboard'),
+                child: const Text('Browse pets as guest', style: TextStyle(color: Colors.purple)),
+              ),
+            ),
           ],
         ),
       ),
