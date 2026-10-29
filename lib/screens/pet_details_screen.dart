@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../adoption_request_service.dart';
 import '../models/pet_model.dart';
 import '../screens/buyer_dashboard_screen.dart';
 
@@ -15,7 +16,10 @@ class PetDetailsScreen extends StatefulWidget {
 }
 
 class _PetDetailsScreenState extends State<PetDetailsScreen> {
-  bool _isInCart = false;
+  final AdoptionRequestService _adoptionRequests = AdoptionRequestService();
+  bool _requestSent = false;
+  bool _checkingRequest = false;
+  bool _sendingRequest = false;
   bool _isFavorite = false;
   bool _isZoomModalOpen = false;
   int _currentIndex = 0;
@@ -29,7 +33,22 @@ class _PetDetailsScreenState extends State<PetDetailsScreen> {
   void initState() {
     super.initState();
     _fetchSellerInfo();
-    // TODO: Check if pet is in cart/favorites
+    _checkExistingRequest();
+  }
+
+  /// Shows "Request sent" instead of the button when the adopter already has an open request for this pet.
+  Future<void> _checkExistingRequest() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null || widget.pet.id.isEmpty) return;
+    setState(() => _checkingRequest = true);
+    try {
+      final exists = await _adoptionRequests.hasOpenRequest(applicantId: user.uid, petId: widget.pet.id);
+      if (mounted) setState(() => _requestSent = exists);
+    } catch (e) {
+      debugPrint('Could not check existing adoption requests: $e');
+    } finally {
+      if (mounted) setState(() => _checkingRequest = false);
+    }
   }
 
   Future<void> _fetchSellerInfo() async {
@@ -66,29 +85,88 @@ class _PetDetailsScreenState extends State<PetDetailsScreen> {
     });
   }
 
-  Future<void> _addToCart() async {
+  Future<void> _requestToAdopt() async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-    final userId = user.uid;
-    final cartRef = FirebaseFirestore.instance.collection('carts').doc(userId);
-    final cartDoc = await cartRef.get();
-    List<dynamic> items = cartDoc.data()?['items'] ?? [];
-    final petId = widget.pet.id;
-    final existingIndex = items.indexWhere((item) => item['id'] == petId);
-    if (existingIndex == -1) {
-      // One pet per adoption request — matches web app's adoption model
-      final petMap = {
-        ...widget.pet.toMap(),
-        'quantity': 1,
-      };
-      items.add(petMap);
+    if (user == null) {
+      Navigator.of(context).pushNamed('/login');
+      return;
     }
-    await cartRef.set({'items': items}, SetOptions(merge: true));
-    setState(() {
-      _isInCart = true;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Pet added')),
+    final messenger = ScaffoldMessenger.of(context);
+    final giverId = _sellerId ?? widget.pet.createdBy;
+    if (giverId == null || giverId.isEmpty) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Could not load the pet giver for this listing. Please try again.')),
+      );
+      return;
+    }
+    if (giverId == user.uid) {
+      messenger.showSnackBar(const SnackBar(content: Text('This is your own listing.')));
+      return;
+    }
+    final message = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => _AdoptionRequestSheet(petName: widget.pet.name),
+    );
+    if (message == null || !mounted) return;
+
+    setState(() => _sendingRequest = true);
+    try {
+      // Re-check so a second device or a double tap cannot create a duplicate request.
+      final exists = await _adoptionRequests.hasOpenRequest(applicantId: user.uid, petId: widget.pet.id);
+      if (!exists) {
+        await _adoptionRequests.submitRequest(
+          pet: widget.pet,
+          giverId: giverId,
+          giverName: _sellerName ?? 'Pet Giver',
+          applicantId: user.uid,
+          applicantName: user.displayName,
+          applicantEmail: user.email,
+          message: message,
+        );
+      }
+      if (!mounted) return;
+      setState(() => _requestSent = true);
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(exists
+              ? 'You already sent a request for this pet. The giver will contact you.'
+              : 'Request sent. The giver will contact you.'),
+        ),
+      );
+    } catch (e) {
+      debugPrint('Could not send adoption request: $e');
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Could not send your request. Please try again.')),
+      );
+    } finally {
+      if (mounted) setState(() => _sendingRequest = false);
+    }
+  }
+
+  Widget _buildRequestButton() {
+    final colors = Theme.of(context).colorScheme;
+    if (_requestSent) {
+      return ElevatedButton.icon(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: colors.primary,
+          foregroundColor: colors.onPrimary,
+        ),
+        onPressed: null,
+        icon: const Icon(Icons.check),
+        label: const Text('Request sent'),
+      );
+    }
+    final busy = _checkingRequest || _sendingRequest || _loadingSeller;
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: colors.primary,
+        foregroundColor: colors.onPrimary,
+      ),
+      onPressed: busy ? null : _requestToAdopt,
+      child: _sendingRequest
+          ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+          : const Text('Request to adopt'),
     );
   }
 
@@ -266,14 +344,7 @@ class _PetDetailsScreenState extends State<PetDetailsScreen> {
               const SizedBox(height: 16),
               Row(
                 children: [
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    ),
-                    onPressed: _addToCart,
-                    child: Text(_isInCart ? 'View My Pack' : 'Add to Family'),
-                  ),
+                  _buildRequestButton(),
                   const SizedBox(width: 16),
                   OutlinedButton(
                     style: OutlinedButton.styleFrom(
@@ -348,6 +419,90 @@ class _PetDetailsScreenState extends State<PetDetailsScreen> {
                 ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Bottom sheet with a short message to the pet giver. Pops with the message on Send.
+class _AdoptionRequestSheet extends StatefulWidget {
+  const _AdoptionRequestSheet({this.petName});
+
+  final String? petName;
+
+  @override
+  State<_AdoptionRequestSheet> createState() => _AdoptionRequestSheetState();
+}
+
+class _AdoptionRequestSheetState extends State<_AdoptionRequestSheet> {
+  late final TextEditingController _controller =
+      TextEditingController(text: defaultAdoptionMessage(widget.petName));
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _send() {
+    final text = normalizeAdoptionMessage(_controller.text);
+    if (text.isEmpty) return;
+    Navigator.of(context).pop(text);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final name = (widget.petName == null || widget.petName!.trim().isEmpty) ? 'this pet' : widget.petName!.trim();
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 16,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+      ),
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text('Request to adopt $name', style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 8),
+            const Text(
+              'Send a short message to the pet giver. They will contact you about the next steps. '
+              'No payment is taken in the app. Your name and email are shared with the giver so they can contact you.',
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _controller,
+              maxLength: adoptionMessageMaxLength,
+              minLines: 3,
+              maxLines: 6,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: const InputDecoration(
+                labelText: 'Message to the pet giver',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancel'),
+                ),
+                const SizedBox(width: 8),
+                ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: _controller,
+                  builder: (context, value, _) => ElevatedButton(
+                    onPressed: value.text.trim().isEmpty ? null : _send,
+                    child: const Text('Send request'),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
