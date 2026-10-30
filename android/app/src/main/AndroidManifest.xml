@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.solidevelectrosoft.adopals">
     <application
-        android:label="adopals"
+        android:label="Adopals"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
