@@ -4,12 +4,15 @@ import 'package:adopals/screens/buyer_dashboard_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
+import 'ait_files_folder.dart';
 import 'firebase_options.dart';
 import 'theme_service.dart';
 import 'theme_service_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Debug/profile Android builds only; not awaited so start-up does not wait.
+  ensureAitFilesFolder();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );

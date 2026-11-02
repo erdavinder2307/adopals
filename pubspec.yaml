@@ -40,6 +40,7 @@ dependencies:
   sign_in_with_apple: ^7.0.1
   crypto: ^3.0.7
   firebase_storage: ^13.4.3
+  path_provider: ^2.1.6
 
 dev_dependencies:
   # The "flutter_lints" package below contains a set of recommended lints to
@@ -49,6 +50,8 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^4.0.0
   flutter_test:
+    sdk: flutter
+  integration_test:
     sdk: flutter
 
 # For information on the generic Dart part of this file, see the
