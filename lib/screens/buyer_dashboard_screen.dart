@@ -190,7 +190,9 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
           notificationCount: 0,
           userName: _userName,
           userImage: null,
-          onCartTap: () {},
+          // v1 is adopter-only: dead actions (cart, notifications, Pet Giver
+          // register/switch) are left null so CommonAppBar does not render them.
+          onCartTap: null,
           onProfileTap: () {},
           onThemeTap: () {
             setState(() {
@@ -202,11 +204,11 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
               _themeService.setActiveTheme(newTheme);
             });
           },
-          onNotificationTap: () {},
+          onNotificationTap: null,
           onLogoTap: () {},
           onLogout: _logout,
-          onSwitchRole: () {},
-          onRegisterSeller: () {},
+          onSwitchRole: null,
+          onRegisterSeller: null,
           isSeller: false,
           isDarkTheme: _themeService.isDarkTheme,
           themes: ThemeService.themes,
@@ -240,12 +242,7 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
                             onChanged: _onSearchChanged,
                           ),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.filter_list),
-                          onPressed: () {
-                            // TODO: Show filter dialog
-                          },
-                        ),
+                        // Filter button hidden until the filter dialog exists.
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -350,13 +347,7 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
             // ),
           ],
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            // TODO: Open chat
-          },
-          backgroundColor: Colors.purple,
-          child: const Icon(Icons.chat),
-        ),
+        // Chat FAB hidden until chat exists.
       ),
     );
   }
