@@ -6,6 +6,7 @@ import 'pet_details_screen.dart'; // Import the PetDetailsScreen
 import 'common_app_bar.dart';
 import '../../theme_service.dart';
 import '../../theme_service_provider.dart';
+import '../block_service.dart';
 import '../models/pet_model.dart';
 import '../auth_guard.dart';
 
@@ -51,12 +52,28 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
       _userName = user.displayName ?? user.email?.split('@').first ?? 'Pet Parent';
     }
     // Signed-out visitors browse as guests (App Review 5.1.1): no redirect to login.
+    BlockService.instance.addListener(_onBlockedChanged);
     _initializeDashboard();
+  }
+
+  @override
+  void dispose() {
+    BlockService.instance.removeListener(_onBlockedChanged);
+    super.dispose();
+  }
+
+  void _onBlockedChanged() {
+    if (!mounted) return;
+    setState(() {
+      _allPets = filterBlockedPets(_allPets, BlockService.instance.blockedIds);
+      _applyTabFilter();
+    });
   }
 
   Future<void> _initializeDashboard() async {
     setState(() => _isLoading = true);
     await _fetchFavoritePetIds();
+    await BlockService.instance.load();
     await _fetchPets();
     //await _fetchRecentlyViewedPets();
     setState(() => _isLoading = false);
@@ -84,7 +101,7 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
         return PetModel.fromMap(data, doc.id, favoritePetIds: _favoritePetIds);
       }).where((pet) => pet != null).toList();
       setState(() {
-        _allPets = pets;
+        _allPets = filterBlockedPets(pets, BlockService.instance.blockedIds);
         _applyTabFilter();
         _isLoading = false;
       });
@@ -118,7 +135,10 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
     }
     final petsSnapshot = await FirebaseFirestore.instance.collection('pets').where(FieldPath.documentId, whereIn: petIds).get();
     setState(() {
-      _recentlyViewedPets = petsSnapshot.docs.map((doc) => PetModel.fromMap(doc.data(), doc.id, favoritePetIds: _favoritePetIds)).toList();
+      _recentlyViewedPets = filterBlockedPets(
+        petsSnapshot.docs.map((doc) => PetModel.fromMap(doc.data(), doc.id, favoritePetIds: _favoritePetIds)).toList(),
+        BlockService.instance.blockedIds,
+      );
     });
   }
 
