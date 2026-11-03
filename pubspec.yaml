@@ -41,6 +41,7 @@ dependencies:
   crypto: ^3.0.7
   firebase_storage: ^13.4.3
   path_provider: ^2.1.6
+  url_launcher: ^6.3.3
 
 dev_dependencies:
   # The "flutter_lints" package below contains a set of recommended lints to

@@ -11,6 +11,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:crypto/crypto.dart';
 
+import '../../legal_links.dart';
 import '../buyer_dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -65,24 +66,22 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // "Remember me" keeps only the email. Older builds also stored the password;
+  // remove it so it does not stay in the Keychain after an update.
   Future<void> _loadRememberedCredentials() async {
+    await _secureStorage.delete(key: 'password');
     final savedEmail = await _secureStorage.read(key: 'email');
-    final savedPassword = await _secureStorage.read(key: 'password');
-    if (savedEmail != null && savedPassword != null) {
+    if (savedEmail != null && mounted) {
       setState(() {
         _emailController.text = savedEmail;
-        _passwordController.text = savedPassword;
         _rememberMe = true;
       });
-      // Optionally, auto-login:
-      // _signInWithEmail();
     }
   }
 
   Future<void> _handleRememberMe() async {
     if (_rememberMe) {
       await _secureStorage.write(key: 'email', value: _emailController.text.trim());
-      await _secureStorage.write(key: 'password', value: _passwordController.text.trim());
     } else {
       await _secureStorage.delete(key: 'email');
       await _secureStorage.delete(key: 'password');
@@ -414,6 +413,25 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                             ],
+                            const SizedBox(height: 4),
+                            Wrap(
+                              alignment: WrapAlignment.center,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: [
+                                const Text('By continuing you agree to our '),
+                                InkWell(
+                                  onTap: () => openLegalLink(context, termsUrl),
+                                  child: const Text('Terms',
+                                      style: TextStyle(color: Colors.purple, decoration: TextDecoration.underline)),
+                                ),
+                                const Text(' and '),
+                                InkWell(
+                                  onTap: () => openLegalLink(context, privacyPolicyUrl),
+                                  child: const Text('Privacy Policy',
+                                      style: TextStyle(color: Colors.purple, decoration: TextDecoration.underline)),
+                                ),
+                              ],
+                            ),
                             const SizedBox(height: 10),
                             // Sign In/Up Button
                             SizedBox(
