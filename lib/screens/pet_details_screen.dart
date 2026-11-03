@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../block_service.dart';
 import '../models/pet_model.dart';
+import '../report_service.dart';
 import '../screens/buyer_dashboard_screen.dart';
 
 class PetDetailsScreen extends StatefulWidget {
@@ -113,6 +115,77 @@ class _PetDetailsScreenState extends State<PetDetailsScreen> {
     }
   }
 
+  String? get _giverId => _sellerId ?? petGiverId(widget.pet);
+
+  Future<void> _reportListing() async {
+    final user = FirebaseAuth.instance.currentUser;
+    final messenger = ScaffoldMessenger.of(context);
+    if (user == null) {
+      messenger.showSnackBar(const SnackBar(content: Text('Please sign in to report a listing.')));
+      return;
+    }
+    final result = await showDialog<({String reason, String details})>(
+      context: context,
+      builder: (context) => const _ReportListingDialog(),
+    );
+    if (result == null) return;
+    try {
+      await submitPetReport(buildPetReport(
+        petId: widget.pet.id,
+        sellerId: _giverId,
+        reason: result.reason,
+        details: result.details,
+        reporterId: user.uid,
+      ));
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Thanks — our team will review this listing within 24 hours.')),
+      );
+    } catch (e) {
+      debugPrint('Could not submit report: $e');
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Could not send your report. Please try again.')),
+      );
+    }
+  }
+
+  Future<void> _blockGiver() async {
+    final giverId = _giverId;
+    final messenger = ScaffoldMessenger.of(context);
+    if (giverId == null) {
+      messenger.showSnackBar(const SnackBar(content: Text('Could not find the pet giver for this listing.')));
+      return;
+    }
+    if (giverId == FirebaseAuth.instance.currentUser?.uid) {
+      messenger.showSnackBar(const SnackBar(content: Text('This is your own listing.')));
+      return;
+    }
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Block this giver?'),
+        content: Text(
+          'You will no longer see pets listed by ${_sellerName ?? 'this pet giver'}.',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Block', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    try {
+      await BlockService.instance.block(giverId);
+      messenger.showSnackBar(const SnackBar(content: Text('Pet giver blocked. Their pets are now hidden.')));
+      if (mounted) Navigator.of(context).pop();
+    } catch (e) {
+      debugPrint('Could not block giver: $e');
+      messenger.showSnackBar(const SnackBar(content: Text('Could not block this pet giver. Please try again.')));
+    }
+  }
+
   Widget _buildAdoptionFeeSection(PetModel pet) {
     final fee = pet.adoptionFee;
     final secondaryColor = Theme.of(context).colorScheme.secondary;
@@ -171,6 +244,25 @@ class _PetDetailsScreenState extends State<PetDetailsScreen> {
         title: Text(pet.name ?? ''),
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor ?? Theme.of(context).colorScheme.primary,
         iconTheme: Theme.of(context).appBarTheme.iconTheme,
+        actions: [
+          PopupMenuButton<String>(
+            tooltip: 'More options',
+            onSelected: (value) {
+              if (value == 'report') _reportListing();
+              if (value == 'block') _blockGiver();
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(
+                value: 'report',
+                child: ListTile(leading: Icon(Icons.flag_outlined), title: Text('Report this listing')),
+              ),
+              PopupMenuItem(
+                value: 'block',
+                child: ListTile(leading: Icon(Icons.block), title: Text('Block this giver')),
+              ),
+            ],
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -350,6 +442,74 @@ class _PetDetailsScreenState extends State<PetDetailsScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _ReportListingDialog extends StatefulWidget {
+  const _ReportListingDialog();
+
+  @override
+  State<_ReportListingDialog> createState() => _ReportListingDialogState();
+}
+
+class _ReportListingDialogState extends State<_ReportListingDialog> {
+  String? _reason;
+  final _detailsController = TextEditingController();
+
+  @override
+  void dispose() {
+    _detailsController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Report this listing'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            RadioGroup<String>(
+              groupValue: _reason,
+              onChanged: (value) => setState(() => _reason = value),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (final reason in reportReasons)
+                    RadioListTile<String>(
+                      value: reason,
+                      title: Text(reason),
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _detailsController,
+              maxLines: 3,
+              maxLength: 500,
+              decoration: const InputDecoration(
+                labelText: 'Details (optional)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
+        TextButton(
+          onPressed: _reason == null
+              ? null
+              : () => Navigator.of(context).pop((reason: _reason!, details: _detailsController.text)),
+          child: const Text('Submit'),
+        ),
+      ],
     );
   }
 }
