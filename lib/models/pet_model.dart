@@ -110,6 +110,24 @@ class PetModel {
     this.adoptionFee,
   });
 
+  /// A publicPets document (the signed-out projection written by the web repo's
+  /// functions/public_pets.py: name, type, breed, dob, gender, location, photoUrl,
+  /// thumbnailUrl, status, createdAt) as a PetModel.
+  factory PetModel.fromPublicPet(Map<String, dynamic> data, String id) {
+    return PetModel.fromMap({
+      'name': data['name'],
+      'category': data['type'],
+      'breed': data['breed'],
+      'gender': data['gender'],
+      'location': data['location'],
+      'dob': data['dob'],
+      'createdAt': data['createdAt'],
+      if (data['photoUrl'] != null) 'photos': [data['photoUrl']],
+      if (data['thumbnailUrl'] != null) 'thumbnails': [data['thumbnailUrl']],
+      'availabilityStatus': data['status'],
+    }, id, favoritePetIds: const []);
+  }
+
   factory PetModel.fromMap(Map<String, dynamic> data, String id, {List<String>? favoritePetIds}) {
     String? extractName(dynamic field) {
       if (field == null) return null;

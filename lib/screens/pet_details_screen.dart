@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../auth_guard.dart';
 import '../block_service.dart';
 import '../models/pet_model.dart';
 import '../report_service.dart';
@@ -69,9 +70,8 @@ class _PetDetailsScreenState extends State<PetDetailsScreen> {
   }
 
   Future<void> _addToCart() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-    final userId = user.uid;
+    if (!requireSignIn(context, message: 'Sign in to add this pet to your family.')) return;
+    final userId = FirebaseAuth.instance.currentUser!.uid;
     final cartRef = FirebaseFirestore.instance.collection('carts').doc(userId);
     final cartDoc = await cartRef.get();
     List<dynamic> items = cartDoc.data()?['items'] ?? [];
@@ -95,9 +95,8 @@ class _PetDetailsScreenState extends State<PetDetailsScreen> {
   }
 
   Future<void> _addToFavorites() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-    final userId = user.uid;
+    if (!requireSignIn(context, message: 'Sign in to save pets for home.')) return;
+    final userId = FirebaseAuth.instance.currentUser!.uid;
     final favRef = FirebaseFirestore.instance.collection('favorites');
     final snapshot = await favRef.where('userId', isEqualTo: userId).where('petId', isEqualTo: widget.pet.id).get();
     if (snapshot.docs.isEmpty) {
@@ -118,12 +117,9 @@ class _PetDetailsScreenState extends State<PetDetailsScreen> {
   String? get _giverId => _sellerId ?? petGiverId(widget.pet);
 
   Future<void> _reportListing() async {
-    final user = FirebaseAuth.instance.currentUser;
+    if (!requireSignIn(context, message: 'Sign in to report a listing.')) return;
+    final user = FirebaseAuth.instance.currentUser!;
     final messenger = ScaffoldMessenger.of(context);
-    if (user == null) {
-      messenger.showSnackBar(const SnackBar(content: Text('Please sign in to report a listing.')));
-      return;
-    }
     final result = await showDialog<({String reason, String details})>(
       context: context,
       builder: (context) => const _ReportListingDialog(),
@@ -149,6 +145,7 @@ class _PetDetailsScreenState extends State<PetDetailsScreen> {
   }
 
   Future<void> _blockGiver() async {
+    if (!requireSignIn(context, message: 'Sign in to block a pet giver.')) return;
     final giverId = _giverId;
     final messenger = ScaffoldMessenger.of(context);
     if (giverId == null) {
@@ -335,7 +332,8 @@ class _PetDetailsScreenState extends State<PetDetailsScreen> {
                 ],
               ),
               const SizedBox(height: 8),
-              _buildAdoptionFeeSection(pet),
+              // Guests see the public projection, which has no fee fields: do not show "Free".
+              if (FirebaseAuth.instance.currentUser != null) _buildAdoptionFeeSection(pet),
               const SizedBox(height: 8),
               Row(
                 children: [
