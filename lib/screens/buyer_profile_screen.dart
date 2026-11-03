@@ -94,12 +94,12 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
   void _saveAboutInfo() async {
     if (_aboutFormKey.currentState?.validate() ?? false) {
       _aboutFormKey.currentState?.save();
-      await FirebaseFirestore.instance.collection('users').doc(_userId).update({
+      await FirebaseFirestore.instance.collection('users').doc(_userId).set({
         'name': _userName,
         'email': _userEmail,
         'phone': _userPhone,
         'address': _userAddress,
-      });
+      }, SetOptions(merge: true));
       setState(() => _aboutEditMode = false);
     }
   }
@@ -107,12 +107,12 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
   void _savePrefInfo() async {
     if (_prefFormKey.currentState?.validate() ?? false) {
       _prefFormKey.currentState?.save();
-      await FirebaseFirestore.instance.collection('users').doc(_userId).update({
+      await FirebaseFirestore.instance.collection('users').doc(_userId).set({
         'categoriesPref': _categoriesPref.map((e) => {'name': e}).toList(),
         'breedsPref': _breedsPref.map((e) => {'name': e}).toList(),
         'gendersPref': _gendersPref,
         'ageRange': {'minAge': _minAge, 'maxAge': _maxAge},
-      });
+      }, SetOptions(merge: true));
       setState(() => _prefEditMode = false);
     }
   }
@@ -302,16 +302,7 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
             const SizedBox(height: 60), // Space for avatar overlap
             Text(_userName ?? '', style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 8),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Theme.of(context).colorScheme.onPrimary,
-              ),
-              onPressed: () {
-                // TODO: Navigate to adoptions
-              },
-              child: const Text('My Adoptions'),
-            ),
+            // 'My Adoptions' button hidden until that screen exists.
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
