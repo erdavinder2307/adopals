@@ -10,6 +10,7 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import '../legal_links.dart';
 import 'home_screen.dart';
 import '../../theme_service.dart';
 import '../../theme_service_provider.dart';
@@ -555,6 +556,27 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
                           ],
                         ),
                       ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Card(
+                    color: Theme.of(context).colorScheme.surface,
+                    child: Column(
+                      children: [
+                        ListTile(
+                          leading: const Icon(Icons.privacy_tip_outlined),
+                          title: const Text('Privacy Policy'),
+                          trailing: const Icon(Icons.open_in_new, size: 18),
+                          onTap: () => openLegalLink(context, privacyPolicyUrl),
+                        ),
+                        const Divider(height: 1),
+                        ListTile(
+                          leading: const Icon(Icons.description_outlined),
+                          title: const Text('Terms and Conditions'),
+                          trailing: const Icon(Icons.open_in_new, size: 18),
+                          onTap: () => openLegalLink(context, termsUrl),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 16),

@@ -31,7 +31,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter:
     sdk: flutter
-  font_awesome_flutter: ^10.7.0
+  font_awesome_flutter: ^11.0.0
   firebase_auth: ^6.5.4
   firebase_core: ^4.11.0
   google_sign_in: ^6.3.0
@@ -40,6 +40,7 @@ dependencies:
   sign_in_with_apple: ^7.0.1
   crypto: ^3.0.7
   firebase_storage: ^13.4.3
+  url_launcher: ^6.3.3
 
 dev_dependencies:
   # The "flutter_lints" package below contains a set of recommended lints to
