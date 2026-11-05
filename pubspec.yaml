@@ -49,6 +49,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
+  flutter_launcher_icons: ^0.14.4
   flutter_lints: ^4.0.0
   flutter_test:
     sdk: flutter
@@ -90,3 +91,15 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# Launcher icons: run `dart run flutter_launcher_icons` after changing anything in assets/icon/.
+flutter_launcher_icons:
+  image_path: "assets/icon/app-icon-1024.png"
+  ios: true
+  remove_alpha_ios: true
+  android: "ic_launcher"
+  min_sdk_android: 21
+  adaptive_icon_background: "assets/icon/adaptive-background.png"
+  adaptive_icon_foreground: "assets/icon/adaptive-foreground.png"
+  adaptive_icon_foreground_inset: 0
+  adaptive_icon_monochrome: "assets/icon/adaptive-foreground.png"
