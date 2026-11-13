@@ -58,14 +58,15 @@ class DefaultFirebaseOptions {
     storageBucket: 'animalpedia-4f75b.appspot.com',
   );
 
+  // iOS (App Store build) uses the production project adopals-prod
+  // (Davinder, 2 Nov 2026). Other platforms still use animalpedia-4f75b.
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDjOX_A3oO6EJF6WHfX0QaE9L3M96LblUY',
-    appId: '1:753158983953:ios:a2e0d946f0defc13453cb0',
-    messagingSenderId: '753158983953',
-    projectId: 'animalpedia-4f75b',
-    storageBucket: 'animalpedia-4f75b.appspot.com',
-    androidClientId: '753158983953-9btrbj00mm1jnjlcp2cbagv09fd5mlla.apps.googleusercontent.com',
-    iosClientId: '753158983953-0enjlhjeruskmtneastqjl1b1cuv7bps.apps.googleusercontent.com',
+    apiKey: 'AIzaSyCPuCRNQA3ABsSEFEwj8pNZFrSIUXS3OeE',
+    appId: '1:1040591053328:ios:709561ae7b04aac2fb2095',
+    messagingSenderId: '1040591053328',
+    projectId: 'adopals-prod',
+    storageBucket: 'adopals-prod.firebasestorage.app',
+    iosClientId: '1040591053328-0pdpqv36mr1veq8md8kmd5cfsfeprbtm.apps.googleusercontent.com',
     iosBundleId: 'com.solidevelectrosoft.adopals',
   );
 

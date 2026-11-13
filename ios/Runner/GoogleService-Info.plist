@@ -3,23 +3,21 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>753158983953-0enjlhjeruskmtneastqjl1b1cuv7bps.apps.googleusercontent.com</string>
+	<string>1040591053328-0pdpqv36mr1veq8md8kmd5cfsfeprbtm.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.753158983953-0enjlhjeruskmtneastqjl1b1cuv7bps</string>
-	<key>ANDROID_CLIENT_ID</key>
-	<string>753158983953-9btrbj00mm1jnjlcp2cbagv09fd5mlla.apps.googleusercontent.com</string>
+	<string>com.googleusercontent.apps.1040591053328-0pdpqv36mr1veq8md8kmd5cfsfeprbtm</string>
 	<key>API_KEY</key>
-	<string>AIzaSyDjOX_A3oO6EJF6WHfX0QaE9L3M96LblUY</string>
+	<string>AIzaSyCPuCRNQA3ABsSEFEwj8pNZFrSIUXS3OeE</string>
 	<key>GCM_SENDER_ID</key>
-	<string>753158983953</string>
+	<string>1040591053328</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>com.solidevelectrosoft.adopals</string>
 	<key>PROJECT_ID</key>
-	<string>animalpedia-4f75b</string>
+	<string>adopals-prod</string>
 	<key>STORAGE_BUCKET</key>
-	<string>animalpedia-4f75b.appspot.com</string>
+	<string>adopals-prod.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -31,6 +29,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:753158983953:ios:a2e0d946f0defc13453cb0</string>
+	<string>1:1040591053328:ios:709561ae7b04aac2fb2095</string>
 </dict>
 </plist>
