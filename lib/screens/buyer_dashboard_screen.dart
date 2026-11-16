@@ -98,7 +98,7 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
       final pets = petsSnapshot.docs.map((doc) {
         final data = doc.data();
         // Defensive: ensure all required fields are present and types are correct
-        return PetModel.fromMap(data, doc.id, favoritePetIds: _favoritePetIds);
+        return PetModel.fromMap(data, doc.id, favoritePetIds: _favoritePetIds, viewerId: _userId);
       }).where((pet) => pet != null).toList();
       setState(() {
         _allPets = filterBlockedPets(pets, BlockService.instance.blockedIds);
@@ -136,7 +136,7 @@ class _BuyerDashboardScreenState extends State<BuyerDashboardScreen> {
     final petsSnapshot = await FirebaseFirestore.instance.collection('pets').where(FieldPath.documentId, whereIn: petIds).get();
     setState(() {
       _recentlyViewedPets = filterBlockedPets(
-        petsSnapshot.docs.map((doc) => PetModel.fromMap(doc.data(), doc.id, favoritePetIds: _favoritePetIds)).toList(),
+        petsSnapshot.docs.map((doc) => PetModel.fromMap(doc.data(), doc.id, favoritePetIds: _favoritePetIds, viewerId: _userId)).toList(),
         BlockService.instance.blockedIds,
       );
     });

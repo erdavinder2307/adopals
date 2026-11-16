@@ -1,3 +1,5 @@
+import 'pet_location.dart';
+
 class AdoptionFeeBreakdown {
   final double careRecoveryFee;
   final double? vaccinationFee;
@@ -128,7 +130,10 @@ class PetModel {
     }, id, favoritePetIds: const []);
   }
 
-  factory PetModel.fromMap(Map<String, dynamic> data, String id, {List<String>? favoritePetIds}) {
+  /// [viewerId] is the signed-in user: only the pet giver (and [isAdmin]) keep the full address in [location],
+  /// everyone else gets the city only.
+  factory PetModel.fromMap(Map<String, dynamic> data, String id,
+      {List<String>? favoritePetIds, String? viewerId, bool isAdmin = false}) {
     String? extractName(dynamic field) {
       if (field == null) return null;
       if (field is String) return field;
@@ -164,7 +169,9 @@ class PetModel {
       saleOrAdoptionStatus: data['saleOrAdoptionStatus'],
       owner: data['owner'],
       gender: data['gender'],
-      location: data['location'],
+      location: data['location'] == null
+          ? null
+          : petLocationFor(data['location'], createdBy: data['createdBy'] as String?, viewerId: viewerId, isAdmin: isAdmin),
       deliveryStatus: data['deliveryStatus'],
       photos: (data['photos'] as List?)?.map((e) => e.toString()).toList(),
       thumbnails: (data['thumbnails'] as List?)?.map((e) => e.toString()).toList(),
@@ -200,6 +207,11 @@ class PetModel {
       adoptionFee: data['adoptionFee'] is Map ? AdoptionFeeBreakdown.fromMap(Map<String, dynamic>.from(data['adoptionFee'])) : null,
     );
   }
+
+  /// The location as [viewerId] may see it: the full address for the pet giver (and admins), the city only for
+  /// everyone else, and an empty string when there is no city.
+  String locationFor({String? viewerId, bool isAdmin = false}) =>
+      petLocationFor(location, createdBy: createdBy, viewerId: viewerId, isAdmin: isAdmin);
 
   Map<String, dynamic> toJson() {
     return {
